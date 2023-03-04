@@ -6,7 +6,6 @@ import { createId } from '@paralleldrive/cuid2';
 import path from "path";
 import formidable from 'formidable';
 
-const ROUTE_PATH = path.resolve(path.join(process.cwd(), '/public/temp_voices'));
 
 const openAI = new OpenAIApi(
   new Configuration({
@@ -23,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // @ts-ignore
       const tempFilePath = files.file.filepath
       console.log(tempFilePath)
-      const fileName = `${ROUTE_PATH}/${id}.mp3`;
+      const fileName = `/tmp/${id}.mp3`;
 
       try {
         await fs.writeFile(fileName, readFileSync(tempFilePath), {
