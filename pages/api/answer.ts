@@ -27,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (e) {
     console.log(e)
     res.status(500).json({
-      message: e.message,
+      message: (e as Error).message,
       error: "Error while fetching response"
     });
   }
