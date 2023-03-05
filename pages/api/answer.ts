@@ -8,24 +8,25 @@ const openAI = new OpenAIApi(
   })
 )
 
+const chatInput = z.object({
+  role: z.enum(["system", "user", "assistant"]),
+  content: z.string()
+})
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { prompt } = z.object({
-    prompt: z.string()
-  }).parse(req.body);
+  const chat = z.array(chatInput).parse(req.body);
   try {
     const completion = await openAI.createChatCompletion({
-      messages: [
-        { role: 'user', 'content': prompt },
-      ],
+      messages: chat,
       model: "gpt-3.5-turbo",
       temperature: 0.2,
-      max_tokens: 75
+      max_tokens: 150
     })
-    res.status(200).json({
-      message: completion.data.choices[0].message?.content.replace(/\\n/g, ' ')
-    });
+    if (completion.data.choices.length === 0) {
+      throw new Error("No response found");
+    }
+    res.status(200).json(completion.data.choices[0].message);
   } catch (e) {
-    console.log(e)
     res.status(500).json({
       message: (e as Error).message,
       error: "Error while fetching response"

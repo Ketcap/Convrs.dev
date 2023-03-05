@@ -3,9 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import fs from 'fs/promises';
 import { createReadStream, readFileSync } from "fs";
 import { createId } from '@paralleldrive/cuid2';
-import path from "path";
 import formidable from 'formidable';
-
 
 const openAI = new OpenAIApi(
   new Configuration({
@@ -16,28 +14,26 @@ const openAI = new OpenAIApi(
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const form = new formidable.IncomingForm();
-    form.parse(req, async (err, fields, files) => {
+    form.parse(req, async (err, _, files) => {
       const id = createId();
 
       // @ts-ignore
       const tempFilePath = files.file.filepath
-      console.log(tempFilePath)
       const fileName = `/tmp/${id}.mp3`;
 
       try {
         await fs.writeFile(fileName, readFileSync(tempFilePath), {
           encoding: 'utf8',
         });
-        // await fs.writeFile(filePath, chunks);
         const transcript = await openAI.createTranscription(
           createReadStream(fileName) as unknown as File,
           'whisper-1'
         );
         res.status(200).json({
-          text: transcript.data.text
+          message: transcript.data.text
         });
       } catch (e) {
-        res.status(400).json({
+        res.status(500).json({
           message: (e as Error).message,
           error: "Error while fetching response"
         })

@@ -15,6 +15,7 @@
     "@mantine/notifications": "^6.0.0",
     "@paralleldrive/cuid2": "^2.2.0",
     "@preact/signals-react": "^1.2.2",
+    "@tabler/icons-react": "^2.7.0",
     "formidable": "^2.1.1",
     "multer": "^1.4.5-lts.1",
     "next": "13.2.3",

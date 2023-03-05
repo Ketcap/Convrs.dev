@@ -2,11 +2,9 @@
 import { notifications } from "@mantine/notifications";
 import { signal } from "@preact/signals-react";
 
-import { getVoiceOutput } from "./elevenLabs";
+import { onRecordingStop } from "./handle";
 
 export const isMicrophoneAllowed = signal<boolean | null>(null);
-
-export const stream = signal<MediaStream | null>(null);
 
 export const getAudioStream = async () => {
   try {
@@ -24,57 +22,26 @@ export const getAudioStream = async () => {
   }
 }
 
-export const currentStream = signal<MediaStream | null>(null);
-export const currentMedia = signal<MediaRecorder | null>(null);
+let mediaRecorder: MediaRecorder | null = null;
+let stream: MediaStream | null = null;
 
 export const startRecording = async () => {
-  const stream = await getAudioStream();
+  stream = await getAudioStream();
   if (!stream) return;
-  currentStream.value = stream;
-  const mediaRecorder = new MediaRecorder(currentStream.value);
-  currentMedia.value = mediaRecorder;
+  mediaRecorder = new MediaRecorder(stream);
   let chunks: Blob[] = [];
   mediaRecorder.ondataavailable = (e) => {
     chunks = [...chunks, e.data];
   };
   mediaRecorder.onstop = () => {
-    onStop(chunks);
-
-    currentStream.value = null;
-    currentMedia.value = null;
-
+    stream?.getTracks().forEach((track) => track.stop());
+    mediaRecorder = null;
+    stream = null;
+    onRecordingStop(chunks);
   };
   mediaRecorder.start();
 }
 
-const onStop = async (blobs: Blob[]) => {
-  const formData = new FormData();
-  const blob = new Blob(blobs, { type: "audio/mpeg;" });
-  formData.append("file", blob);
-
-  const transcript: { text: string } = await fetch('/api/whisper', {
-    method: 'POST',
-    body: formData
-  }).then(res => res.json());
-
-  const response: { message: string } = await fetch('/api/answer', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      prompt: transcript.text
-    })
-  }).then(res => res.json());
-
-  const voice = await getVoiceOutput(response.message);
-  // @ts-ignore
-  const audioUrl = URL.createObjectURL(new Blob([new Uint8Array(voice)]));
-  const audio = new Audio(audioUrl);
-  audio.play();
-
-}
-
-export const stopRecording = async () => {
-  currentMedia.value?.stop();
+export const stopRecording = () => {
+  mediaRecorder?.stop();
 }
