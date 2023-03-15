@@ -1,6 +1,7 @@
 import { Configuration, OpenAIApi } from "openai";
 import { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
+import { availableChatroomTypes, findChatroom } from "../../api/chatroom/chatrooms";
 
 const openAI = new OpenAIApi(
   new Configuration({
@@ -10,14 +11,21 @@ const openAI = new OpenAIApi(
 
 const chatInput = z.object({
   role: z.enum(["system", "user", "assistant"]),
-  content: z.string()
+  content: z.string(),
+})
+
+const requestInput = z.object({
+  chatroom: z.enum(availableChatroomTypes),
+  chatInput: z.array(chatInput)
 })
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const chat = z.array(chatInput).parse(req.body);
+  const chat = requestInput.parse(req.body);
+  const chatroom = findChatroom(chat.chatroom);
+  console.log(chatroom)
   try {
     const completion = await openAI.createChatCompletion({
-      messages: chat,
+      messages: [...chatroom.systemDirectives, ...chat.chatInput],
       model: "gpt-3.5-turbo",
       temperature: 0.2,
       max_tokens: 150

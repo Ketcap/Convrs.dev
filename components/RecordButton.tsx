@@ -7,8 +7,8 @@ interface RecordButtonProps {
   onClick: (state: boolean) => Promise<void>;
 }
 
-const size = 75;
-const recordingSize = 55;
+const size = 50;
+const recordingSize = 35;
 
 export const RecordButton = ({ onClick }: RecordButtonProps) => {
   const [isRecording, setIsRecording] = useState(false);

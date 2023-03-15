@@ -9,7 +9,7 @@ export interface ChatInput {
   audio?: HTMLAudioElement;
 }
 
-export const chatState = signal<ChatInput[]>([]);
+export const chatState = signal<ChatInput[]>([].flatMap(e => [e, e, e]));
 
 export const addChatInput = (input: Omit<ChatInput, 'id'>) => {
   // make each chat input a signal so we can update it later

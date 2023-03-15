@@ -34,44 +34,18 @@ export const onRecordingStop = async (blobs: Blob[]) => {
       color: "red",
     });
   }
+  const answer = await getAnswer(transcript.message);
 
-  const userInput = addChatInput({
-    role: "user",
-    content: transcript.message,
-  })
-
-  let answer: ChatResponse;
-  let aiInput: ChatInput;
-  try {
-    answer = await fetch('/api/answer', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(chatState.value)
-    }).then(res => res.json());
-    if ('error' in answer) {
-      throw new Error(answer.message)
-    }
-    aiInput = addChatInput(answer);
-  } catch (e) {
-    return notifications.show({
-      title: "Ups!",
-      message:
-        "I couldn't find an answer for you, please try again",
-      color: "red",
-    });
-  }
-
+  if (!answer) return;
 
   try {
-    const voice = await getVoiceOutput(aiInput.content);
+    const voice = await getVoiceOutput(answer.content);
     // @ts-ignore
     const audioUrl = URL.createObjectURL(new Blob([new Uint8Array(voice)]));
     const audio = new Audio(audioUrl);
 
     chatState.value = chatState.value.map((chat) => {
-      if (chat.id === aiInput.id) {
+      if (chat.id === answer.id) {
         return {
           ...chat,
           audio
@@ -90,5 +64,38 @@ export const onRecordingStop = async (blobs: Blob[]) => {
       color: "red",
     });
   }
+}
 
+export const getAnswer = async (message: string) => {
+  const userInput = addChatInput({
+    role: "user",
+    content: message,
+  })
+
+  let answer: ChatResponse;
+  let aiInput: ChatInput;
+  try {
+    answer = await fetch('/api/answer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        chatInput: chatState.peek(),
+        chatroom: 'Explanation'
+      })
+    }).then(res => res.json());
+    if ('error' in answer) {
+      throw new Error(answer.message)
+    }
+    aiInput = addChatInput(answer);
+    return aiInput;
+  } catch (e) {
+    return notifications.show({
+      title: "Ups!",
+      message:
+        "I couldn't find an answer for you, please try again",
+      color: "red",
+    });
+  }
 }
