@@ -10,9 +10,10 @@ import {
   Box,
 } from "@mantine/core";
 import { useSignal, useSignalEffect } from "@preact/signals-react";
+import { SenderType } from "@prisma/client";
 import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
 import { useEffect } from "react";
-import { ChatInput } from "../utils/chatState";
+import { ChatInput } from "../states/chatState";
 import { AIAvatar } from "./AIAvatar";
 
 export interface ChatItemProps extends ChatInput {}
@@ -29,7 +30,7 @@ const ChatItemUser = ({ position }: { position: "left" | "right" }) => (
   </Grid.Col>
 );
 
-export const ChatItem = ({ role, content, audio }: ChatItemProps) => {
+export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
   const currentProgress = useSignal(0);
   const isPlaying = useSignal(false);
 
@@ -46,8 +47,8 @@ export const ChatItem = ({ role, content, audio }: ChatItemProps) => {
   return (
     <Paper pos="relative">
       <Grid align={"flex-end"} m={0}>
-        {role === "assistant" && <ChatItemUser position="left" />}
-        <Grid.Col span={10} bg="#f2f2f7">
+        {role === SenderType.Assistant && <ChatItemUser position="left" />}
+        <Grid.Col span={10} bg="#f2f2f7" sx={{ borderRadius: 4 }}>
           {audio && (
             <Group position="apart">
               <>
@@ -79,13 +80,13 @@ export const ChatItem = ({ role, content, audio }: ChatItemProps) => {
           <TypographyStylesProvider>
             <Text>
               <div
-                dangerouslySetInnerHTML={{ __html: content }}
+                dangerouslySetInnerHTML={{ __html: markdown ?? content }}
                 style={{ whiteSpace: "pre-wrap" }}
               />
             </Text>
           </TypographyStylesProvider>
         </Grid.Col>
-        {role === "user" && <ChatItemUser position="right" />}
+        {role === SenderType.User && <ChatItemUser position="right" />}
       </Grid>
     </Paper>
   );

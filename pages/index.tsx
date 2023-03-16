@@ -1,17 +1,76 @@
-import { ActionIcon, Box, Button, Group, Textarea } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Group,
+  LoadingOverlay,
+  Textarea,
+} from "@mantine/core";
 import { RecordButton } from "../components/RecordButton";
-import { startRecording, stopRecording } from "../utils/audioState";
+import { startRecording, stopRecording } from "../states/audioState";
 import { Chat } from "../components/Chat";
 import { IconSend } from "@tabler/icons-react";
 import { useRef } from "react";
-import { getAnswer } from "../utils/handle";
+import { getAnswer } from "../states/handle";
+import { currentChatroom } from "../states/chatrooms";
+import { trpc } from "../lib/trpcClient";
+import { onErrorHandler } from "../lib/trpcUtils";
+import { addChatInput, chatState, initializeChat } from "../states/chatState";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
+  const currentChatRoomId = currentChatroom.value;
+  const { isLoading: isChatroomLoading } =
+    trpc.message.getChatroomMessages.useQuery(
+      {
+        chatroomId: currentChatRoomId!,
+      },
+      {
+        enabled: !!currentChatRoomId,
+        refetchOnWindowFocus: false,
+        retry: false,
+        onSuccess: async (data) => {
+          initializeChat(data);
+        },
+      }
+    );
+  const { isLoading: isThinking, mutateAsync: getAnswer } =
+    trpc.openAI.getCompletion.useMutation({
+      cacheTime: 0,
+      onError: onErrorHandler,
+      onSuccess: async (data) => {
+        addChatInput({
+          content: data.content,
+          role: data.senderType,
+          id: data.id,
+          timestamp: data.createdAt,
+        });
+      },
+    });
+  const { mutateAsync: sendMessage } =
+    trpc.message.sendMessageToChatroom.useMutation({
+      cacheTime: 0,
+      onError: onErrorHandler,
+      onSuccess: async (data) => {
+        getAnswer({
+          chatroomId: data.chatroomId,
+          content: data.content,
+        });
+        addChatInput({
+          content: data.content,
+          role: data.senderType,
+          id: data.id,
+          timestamp: data.createdAt,
+        });
+      },
+    });
   const onSend = () => {
     const val = ref.current!.value;
     if (!val) return;
-    getAnswer(val);
+    sendMessage({
+      content: val,
+      chatroomId: currentChatRoomId,
+    });
     ref.current!.value = "";
   };
   return (
@@ -28,6 +87,9 @@ export default function Home() {
         <Chat />
       </Box>
       <Box pos="sticky" bg="white" bottom={0} py={10}>
+        <LoadingOverlay
+          visible={isThinking || (isChatroomLoading && !!currentChatRoomId)}
+        />
         <Group align={"center"}>
           <Textarea
             ref={(inputRef) => (ref.current = inputRef!)}

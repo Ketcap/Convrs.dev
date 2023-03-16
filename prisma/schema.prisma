@@ -9,3 +9,72 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id    String  @id @default(cuid())
+  email String  @unique
+  name  String?
+
+  Messages Message[]
+
+  createdAt DateTime   @default(now())
+  Chatroom  Chatroom[]
+}
+
+enum RoomType {
+  Chat
+  PreDefined
+}
+
+model Chatroom {
+  id   String  @id @default(cuid())
+  name String? // Optional name for the chatroom
+
+  userId String // The user who created the chatroom
+  User   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  Messages  Message[]
+
+  directives String[]
+  roomType   RoomType
+}
+
+model Message {
+  id String @id @default(cuid())
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  Chatroom   Chatroom @relation(fields: [chatroomId], references: [id])
+  chatroomId String
+
+  content String
+
+  senderType SenderType
+  createdAt  DateTime   @default(now())
+
+  // Fetching messages by chatroom and createdAt
+  @@index([chatroomId, createdAt])
+  // Fetching messages by user and chatroom
+  @@index([userId, chatroomId])
+}
+
+enum SenderType {
+  System
+  User
+  Assistant
+}
+
+enum Application {
+  OpenAI
+  ElevenLabs
+}
+
+model Config {
+  id String @id @default(cuid())
+
+  application Application
+
+  key String // The key of the config
+}
