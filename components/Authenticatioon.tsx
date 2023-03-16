@@ -74,14 +74,14 @@ export const Authentication = () => {
         try {
           z.string().email().parse(val);
         } catch (err) {
-          return err.message;
+          return (err as Error).message;
         }
       },
       password: (val) => {
         try {
           z.string().min(8).parse(val);
         } catch (err) {
-          return err.message;
+          return (err as Error).message;
         }
       },
     },
