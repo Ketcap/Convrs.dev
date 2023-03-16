@@ -1,6 +1,6 @@
 import { RoomType, SenderType } from "@prisma/client";
 import { z } from "zod";
-import { privateProcedure, router } from "../../lib/trpc";
+import { privateProcedure, router } from "@/lib/trpc";
 import { chatrooms } from "./chatrooms";
 import { createId } from '@paralleldrive/cuid2';
 

@@ -18,13 +18,13 @@ function getBaseUrl() {
 }
 export const trpc = createTRPCNext<AppRouter>({
   config({ ctx }) {
-    const { token } = nookies.get(ctx, 'token')
+    const { token } = nookies.get(null, 'token')
     return {
       transformer: superjson,
       links: [
         httpBatchLink({
           headers: {
-            ...(token ? ({ Authorization: `${token}` }) : ({}))
+            Authorization: `${token}`
           },
           url: `${getBaseUrl()}/api/trpc`,
         }),
@@ -35,5 +35,4 @@ export const trpc = createTRPCNext<AppRouter>({
    * @link https://trpc.io/docs/ssr
    **/
   ssr: false,
-
 });

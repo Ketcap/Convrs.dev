@@ -1,14 +1,9 @@
-import { SenderType } from "@prisma/client";
+import { Application, SenderType } from "@prisma/client";
 import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
 import { z } from "zod";
-import { privateProcedure, router } from "../../lib/trpc";
-import { findChatroom } from "../chatroom/chatrooms";
-
-const openAI = new OpenAIApi(
-  new Configuration({
-    apiKey: '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'
-  })
-)
+import { privateProcedure, router } from "@/lib/trpc";
+import { getConfigOrThrow } from "@/api/util/config";
+import { createOpenAI } from "./util";
 
 
 export const openAIRouter = router({
@@ -19,6 +14,8 @@ export const openAIRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const { chatroomId, content } = input;
+      const config = await getConfigOrThrow(ctx.user, Application.OpenAI);
+      const openAI = createOpenAI(config.key);
       const chatroom = await ctx.prisma.chatroom.findUniqueOrThrow({
         where: {
           id: chatroomId
@@ -35,7 +32,7 @@ export const openAIRouter = router({
             role: 'user',
             name: ctx.user.name || undefined
           }],
-          model: "gpt-3.5-turbo",
+          model: "gpt-3.5-turbo-0301", // use it from the list of models
           temperature: 0.7,
           max_tokens: 250,
         })
@@ -55,6 +52,7 @@ export const openAIRouter = router({
           }
         });
       } catch (e) {
+        console.log(JSON.stringify(e));
         throw new Error((e as Error).message)
       }
     })

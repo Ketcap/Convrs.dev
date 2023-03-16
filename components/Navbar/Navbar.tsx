@@ -1,9 +1,14 @@
-import { Box, Navbar as MantineNavbar, Stack } from "@mantine/core";
+import {
+  Box,
+  LoadingOverlay,
+  Navbar as MantineNavbar,
+  Stack,
+} from "@mantine/core";
 import { trpc } from "../../lib/trpcClient";
 import { user } from "../../states/authentication";
-import { defaultRooms } from "../../states/defaultRooms";
 import { navbarState } from "../../states/navbarState";
 import { ChatRoomItem } from "./ChatRoomItem";
+import { ProfileButton } from "./ProfileButton";
 
 export const Navbar = () => {
   const [
@@ -44,6 +49,7 @@ export const Navbar = () => {
           {defaultRooms?.map((room, index) => (
             <ChatRoomItem {...room} key={index} />
           ))}
+          {user.value && <ProfileButton image="/ai-2.png" {...user.value} />}
         </Stack>
       </Stack>
     </Box>

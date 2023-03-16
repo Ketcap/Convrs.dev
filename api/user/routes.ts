@@ -1,57 +1,37 @@
-import { SenderType } from "@prisma/client";
 import { z } from "zod";
-import { privateProcedure, publicProcedure, router } from "../../lib/trpc";
+import { privateProcedure, router } from "@/lib/trpc";
+import { Application, ConfigType } from "@prisma/client";
 
-const signupInput = z.object({
-  name: z.string(),
-  email: z.string().email(),
-  password: z.string().min(8)
-})
 
-const signinInput = z.object({
-  email: z.string().email(),
-  password: z.string().min(8)
-})
+const configInput = z.object({
+  application: z.nativeEnum(Application),
+  key: z.string(),
+  configType: z.nativeEnum(ConfigType).default(ConfigType.Key),
+});
 
 export const userRouter = router({
-  signUp: publicProcedure.input(signupInput).mutation(async ({ input, ctx }) => {
-    const { email, password, name } = input;
-    const { data, error } = await ctx.supabase.auth.signUp({
-      email,
-      password
-    })
-    if (error) {
-      throw error;
-    }
-    // This assertion is needed because the type of data.session is Session | null and it's defined on supabase dashboard depending on auto sign in or not
-    const { user } = data.session!
-    try {
-      await ctx.prisma.user.create({
-        data: {
-          id: user.id,
-          name,
-          email
-        }
-      })
-    }
-    catch (e) {
-      ctx.supabase.auth.admin.deleteUser(user.id)
-    }
-
-    return { session: data.session };
-  }),
-  signIn: publicProcedure.input(signinInput).mutation(async ({ input, ctx }) => {
-    const { email, password } = input;
-    const { data, error } = await ctx.supabase.auth.signInWithPassword({
-      email,
-      password
-    })
-    if (error) {
-      throw error;
-    }
-    return { user: data.user, session: data.session };
-  }),
   me: privateProcedure.query(async ({ ctx }) => {
     return ctx.user
+  }),
+  config: privateProcedure.input(
+    configInput
+  ).mutation(async ({ ctx, input }) => {
+    return ctx.prisma.config.upsert({
+      create: {
+        key: input.key,
+        userId: ctx.user.id,
+        application: input.application,
+        type: input.configType
+      },
+      where: {
+        userId_application: {
+          application: input.application,
+          userId: ctx.user.id
+        }
+      },
+      update: {
+        key: input.key,
+      }
+    })
   })
 })

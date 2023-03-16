@@ -14,11 +14,14 @@ export const publicProcedure = t.procedure
 const isAuth = t.middleware(async ({ next, ctx }) => {
   const token = ctx.req.headers.authorization;
   try {
-    const { data } = await ctx.supabase.auth.getUser(token);
-    if (!data) throw new Error('Not Authenticated');
+    const { data, error } = await ctx.supabase.auth.getUser(token);
+    if (!data?.user) throw new Error('Not Authenticated');
     const user = await ctx.prisma.user.findUniqueOrThrow({
       where: {
         id: data.user?.id
+      },
+      include: {
+        Configs: true
       }
     })
 

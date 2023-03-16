@@ -11,14 +11,16 @@ datasource db {
 }
 
 model User {
-  id    String  @id @default(cuid())
-  email String  @unique
-  name  String?
+  id    String @id @default(cuid())
+  email String @unique
+  name  String
 
   Messages Message[]
 
   createdAt DateTime   @default(now())
   Chatroom  Chatroom[]
+
+  Configs Config[]
 }
 
 enum RoomType {
@@ -71,10 +73,21 @@ enum Application {
   ElevenLabs
 }
 
+enum ConfigType {
+  Key
+  Voice
+}
+
 model Config {
   id String @id @default(cuid())
 
   application Application
+  type        ConfigType
 
   key String // The key of the config
+
+  userId String?
+  User   User?   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, application])
 }

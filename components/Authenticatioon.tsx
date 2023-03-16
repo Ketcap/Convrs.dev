@@ -6,7 +6,6 @@ import {
   Loader,
   Text,
   TextInput,
-  Title,
   Checkbox,
   PasswordInput,
   Divider,
@@ -14,11 +13,9 @@ import {
   Anchor,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useEffect } from "react";
 import nookies from "nookies";
 import { showNotification } from "@mantine/notifications";
 
-import { useRouter } from "next/router";
 import { user } from "../states/authentication";
 import { upperFirst, useToggle } from "@mantine/hooks";
 import { z } from "zod";
@@ -28,17 +25,14 @@ import { onErrorHandler } from "../lib/trpcUtils";
 
 export const Authentication = () => {
   const [type, toggle] = useToggle(["login", "register"] as const);
-  const { data, isLoading, refetch } = trpc.authentication.me.useQuery(
-    undefined,
-    {
-      refetchOnWindowFocus: false,
-      retry: false,
-      onSuccess: (data) => {
-        user.value = data;
-      },
-    }
-  );
-  console.log(data);
+  const { data, isLoading, refetch } = trpc.user.me.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    retry: 0,
+    cacheTime: 0,
+    onSuccess: (data) => {
+      user.value = data;
+    },
+  });
   const { mutate: login } = trpc.authentication.signIn.useMutation({
     onError: onErrorHandler,
     onSuccess: (data) => {
@@ -87,7 +81,8 @@ export const Authentication = () => {
     },
   });
 
-  const onSubmit = form.onSubmit((val) => {
+  const onSubmit = form.onSubmit((val, event) => {
+    event.preventDefault();
     const { email, password, name, terms } = val;
     if (type === "register" && !terms) {
       showNotification({
@@ -96,7 +91,6 @@ export const Authentication = () => {
       });
       return;
     }
-
     if (type === "login") {
       return login({ email, password });
     }

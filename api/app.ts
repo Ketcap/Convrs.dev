@@ -1,4 +1,5 @@
 import { router } from "../lib/trpc";
+import { authenticationRouter } from "./authentication/router";
 import { chatroomRouter, messageRouter } from "./chatroom/routes";
 import { openAIRouter } from "./openAI/router";
 import { userRouter } from "./user/routes";
@@ -7,8 +8,9 @@ import { userRouter } from "./user/routes";
 export const appRouter = router({
   chatroom: chatroomRouter,
   message: messageRouter,
-  authentication: userRouter,
-  openAI: openAIRouter
+  authentication: authenticationRouter,
+  openAI: openAIRouter,
+  user: userRouter,
 });
 
 
