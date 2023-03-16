@@ -68,6 +68,7 @@ export const onRecordingStop = async (blobs: Blob[]) => {
 
 export const getAnswer = async (message: string) => {
   const userInput = addChatInput({
+    // @ts-ignore
     role: "user",
     content: message,
   })

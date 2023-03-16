@@ -1,6 +1,6 @@
-import { ChatRoomItemProps } from "../components/Navbar/ChatRoomItem";
 
-export const defaultRooms: ChatRoomItemProps[] = [
+
+export const defaultRooms = [
   {
     imageSrc: '/ai-1.png',
     title: 'AI',

@@ -3,7 +3,7 @@ import { Chatroom } from "@prisma/client";
 import { currentChatroom } from "../../states/chatrooms";
 import { AIAvatar } from "../AIAvatar";
 
-export interface ChatRoomItemProps extends Chatroom {
+export interface ChatRoomItemProps extends Pick<Chatroom, "name" | "id"> {
   imageSrc?: string;
 }
 

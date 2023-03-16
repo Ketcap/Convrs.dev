@@ -11,7 +11,6 @@ import { startRecording, stopRecording } from "../states/audioState";
 import { Chat } from "../components/Chat";
 import { IconSend } from "@tabler/icons-react";
 import { useRef } from "react";
-import { getAnswer } from "../states/handle";
 import { currentChatroom } from "../states/chatrooms";
 import { trpc } from "../lib/trpcClient";
 import { onErrorHandler } from "../lib/trpcUtils";
