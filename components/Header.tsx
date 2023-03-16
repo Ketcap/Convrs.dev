@@ -5,12 +5,12 @@ import {
   Group,
   Header as MantineHeader,
 } from "@mantine/core";
-import { navbarState } from "../utils/navbarState";
+import { navbarState } from "../states/navbarState";
 import { AIAvatar } from "./AIAvatar";
 
 export const Header = () => {
   return (
-    <MantineHeader height={55} pos="sticky">
+    <MantineHeader height={55} pos="sticky" zIndex={10}>
       <Group w="100%" h="100%" px={16}>
         <Burger
           opened={navbarState.value}

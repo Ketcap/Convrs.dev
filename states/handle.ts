@@ -88,7 +88,7 @@ export const getAnswer = async (message: string) => {
     if ('error' in answer) {
       throw new Error(answer.message)
     }
-    aiInput = addChatInput(answer);
+    aiInput = await addChatInput(answer);
     return aiInput;
   } catch (e) {
     return notifications.show({

@@ -1,7 +1,7 @@
 import { Box } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { useState } from "react";
-import { isMicrophoneAllowed } from "../utils/audioState";
+import { isMicrophoneAllowed } from "../states/audioState";
 
 interface RecordButtonProps {
   onClick: (state: boolean) => Promise<void>;
