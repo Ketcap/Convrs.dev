@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["extendedWhereUnique"]
 }
 
 datasource db {
@@ -56,6 +57,8 @@ model Message {
   senderType SenderType
   createdAt  DateTime   @default(now())
 
+  Voice Bytes?
+
   // Fetching messages by chatroom and createdAt
   @@index([chatroomId, createdAt])
   // Fetching messages by user and chatroom
@@ -89,5 +92,5 @@ model Config {
   userId String?
   User   User?   @relation(fields: [userId], references: [id])
 
-  @@unique([userId, application])
+  @@unique([userId, application, type])
 }

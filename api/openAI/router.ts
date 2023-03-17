@@ -1,5 +1,5 @@
 import { Application, SenderType } from "@prisma/client";
-import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from "openai";
+import { ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum, Configuration, OpenAIApi } from "openai";
 import { z } from "zod";
 import { privateProcedure, router } from "@/lib/trpc";
 import { getConfigOrThrow } from "@/api/util/config";
@@ -19,6 +19,12 @@ export const openAIRouter = router({
       const chatroom = await ctx.prisma.chatroom.findUniqueOrThrow({
         where: {
           id: chatroomId
+        },
+        include: {
+          Messages: {
+            orderBy: [{ createdAt: 'asc' }],
+            take: 20
+          }
         }
       })
       try {
@@ -26,8 +32,13 @@ export const openAIRouter = router({
           content: directive,
           role: 'system',
         }));
+        const contextMessages: ChatCompletionRequestMessage[] = chatroom.Messages.map((message) => ({
+          content: message.content,
+          role: message.senderType as ChatCompletionRequestMessageRoleEnum,
+          name: message.senderType === SenderType.User ? ctx.user.name : 'assistant'
+        }));
         const completion = await openAI.createChatCompletion({
-          messages: [...directives, {
+          messages: [...directives, ...contextMessages, {
             content,
             role: 'user',
             name: ctx.user.name || undefined

@@ -1,12 +1,13 @@
 import { effect, signal } from "@preact/signals-react";
 import { Application, ConfigType } from "@prisma/client";
+import { trpc } from "../lib/trpcClient";
 import { user } from "./authentication";
 
 const elevenLabsUrl = 'https://api.elevenlabs.io/v1'
 
 export interface Voice {
   "voice_id": string;
-  name: "string"
+  name: string
 }
 
 export const voiceList = signal<Voice[]>([]);
@@ -39,22 +40,31 @@ effect(async () => {
 })
 
 
-export const getVoiceOutput = async (output: string) => {
-  if (!elevenLabsKey.value) return;
-  const responseVoice = await fetch(`${elevenLabsUrl}/text-to-speech/${elevenLabsKey.value}`, {
+export const getVoiceOutput = async (output: string, messageId: string, mutateAsync: ReturnType<typeof trpc.message.addVoiceToMessage.useMutation>['mutateAsync']) => {
+  const val = voiceKey.peek();
+  const elevenLabsKeyVal = elevenLabsKey.peek();
+  if (!val || !elevenLabsKeyVal) return;
+  const responseVoice = await fetch(`${elevenLabsUrl}/text-to-speech/${val}`, {
     method: 'POST',
     headers: {
       'accept': 'audio/mpeg',
-      'xi-api-key': elevenLabsKey.value as string,
+      'xi-api-key': elevenLabsKeyVal,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       "text": output,
       "voice_settings": {
-        "stability": 0.55,
-        "similarity_boost": 0.75
+        "stability": 0.60,
+        "similarity_boost": 0.65
       }
     })
   }).then(res => res.arrayBuffer())
+  try {
+    mutateAsync({
+      messageId,
+      voice: Buffer.from(responseVoice)
+    })
+  }
+  catch { }
   return responseVoice
 }

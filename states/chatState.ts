@@ -24,6 +24,21 @@ export const addChatInput = async (input: ChatInput) => {
   return chatInput;
 }
 
+export const addVoiceToChatInput = (id: string, voice: ArrayBuffer) => {
+  const audioUrl = URL.createObjectURL(new Blob([new Uint8Array(voice)]));
+  const audio = new Audio(audioUrl);
+  chatState.value = chatState.value.map((chat) => {
+    if (chat.id === id) {
+      return {
+        ...chat,
+        audio
+      }
+    }
+    return chat
+  })
+  audio.play();
+}
+
 export const initializeChat = async (messages: Message[]) => {
   chatState.value = await Promise.all(messages.map(message => {
     return addChatInput({

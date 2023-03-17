@@ -39,7 +39,7 @@ export const onRecordingStop = async (blobs: Blob[]) => {
   if (!answer) return;
 
   try {
-    const voice = await getVoiceOutput(answer.content);
+    const voice = await getVoiceOutput('');
     // @ts-ignore
     const audioUrl = URL.createObjectURL(new Blob([new Uint8Array(voice)]));
     const audio = new Audio(audioUrl);

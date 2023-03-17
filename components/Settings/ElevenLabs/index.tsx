@@ -14,21 +14,17 @@ import { Application, ConfigType } from "@prisma/client";
 import { z } from "zod";
 import { trpc } from "../../../lib/trpcClient";
 import { onErrorHandler } from "../../../lib/trpcUtils";
-import { user } from "../../../states/authentication";
-import { Voice, elevenLabsKey, voiceList } from "../../../states/elevenLabs";
+import { elevenLabsKey, voiceKey, voiceList } from "../../../states/elevenLabs";
 
 export const ElevenLabs = () => {
   const { isLoading, mutateAsync } = trpc.user.config.useMutation({
     onError: onErrorHandler,
   });
-  const elevenLabConfig = user?.value?.Configs.find(
-    (e) => e.application === Application.ElevenLabs
-  );
 
   const form = useForm({
     initialValues: {
-      key: `${elevenLabConfig?.key}`,
-      voice: `${elevenLabsKey.value}`,
+      key: elevenLabsKey.value ?? "",
+      voice: voiceKey.value ?? "",
     },
     validate: {
       key: (val) => {
@@ -47,6 +43,7 @@ export const ElevenLabs = () => {
         {
           application: Application.ElevenLabs,
           key: val.key,
+          configType: ConfigType.Key,
         },
         {
           onSuccess: (data) => {
@@ -56,11 +53,18 @@ export const ElevenLabs = () => {
       );
     }
     if (val.voice) {
-      mutateAsync({
-        application: Application.ElevenLabs,
-        key: val.voice,
-        configType: ConfigType.Voice,
-      });
+      mutateAsync(
+        {
+          application: Application.ElevenLabs,
+          key: val.voice,
+          configType: ConfigType.Voice,
+        },
+        {
+          onSuccess: (data) => {
+            voiceKey.value = data.key;
+          },
+        }
+      );
     }
   });
 
@@ -92,9 +96,13 @@ export const ElevenLabs = () => {
                   disabled={isLoading}
                 />
                 <Select
+                  value={form.values.voice}
                   label="Voice you would like to use"
                   placeholder="Pick one"
-                  data={voiceList.value?.map((e) => ({
+                  onChange={(item) => {
+                    form.setFieldValue("voice", item!);
+                  }}
+                  data={(voiceList.value ?? []).map((e) => ({
                     value: e.voice_id,
                     label: e.name,
                   }))}

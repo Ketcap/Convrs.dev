@@ -14,11 +14,19 @@ import { useRef } from "react";
 import { currentChatroom } from "../states/chatrooms";
 import { trpc } from "../lib/trpcClient";
 import { onErrorHandler } from "../lib/trpcUtils";
-import { addChatInput, chatState, initializeChat } from "../states/chatState";
+import {
+  addChatInput,
+  addVoiceToChatInput,
+  chatState,
+  initializeChat,
+} from "../states/chatState";
+import { getVoiceOutput } from "../states/elevenLabs";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
   const currentChatRoomId = currentChatroom.value;
+  const { mutateAsync: voiceToMessageMutation } =
+    trpc.message.addVoiceToMessage.useMutation();
   const { isLoading: isChatroomLoading } =
     trpc.message.getChatroomMessages.useQuery(
       {
@@ -38,6 +46,13 @@ export default function Home() {
       cacheTime: 0,
       onError: onErrorHandler,
       onSuccess: async (data) => {
+        getVoiceOutput(data.content, data.id, voiceToMessageMutation).then(
+          (res) => {
+            if (res) {
+              addVoiceToChatInput(data.id, res);
+            }
+          }
+        );
         addChatInput({
           content: data.content,
           role: data.senderType,

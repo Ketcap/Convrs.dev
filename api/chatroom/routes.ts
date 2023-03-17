@@ -27,6 +27,9 @@ const sendMessageToChatroomInput = z.object({
   chatroomId: z.string().optional(),
   content: z.string(),
 })
+
+
+
 export const messageRouter = router({
   getChatroomMessages: privateProcedure
     .input(getChatroomMessagesInput)
@@ -66,6 +69,25 @@ export const messageRouter = router({
               { connect: { id: chatroomId } } :
               { create: { name: 'New Chat', userId, roomType: isPredefined ? RoomType.PreDefined : RoomType.Chat } })
           }
+        }
+      })
+    }),
+  addVoiceToMessage: privateProcedure
+    .input(
+      z.object({
+        messageId: z.string(),
+        voice: z.any()
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { messageId, voice } = input;
+      return ctx.prisma.message.update({
+        where: {
+          id: messageId,
+          userId: ctx.user.id
+        },
+        data: {
+          Voice: voice as Buffer
         }
       })
     })

@@ -22,12 +22,14 @@ export const userRouter = router({
         userId: ctx.user.id,
         application: input.application,
         type: input.configType
+
       },
       where: {
-        userId_application: {
+        userId_application_type: {
+          userId: ctx.user.id,
           application: input.application,
-          userId: ctx.user.id
-        }
+          type: input.configType
+        },
       },
       update: {
         key: input.key,
