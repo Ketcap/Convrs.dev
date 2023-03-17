@@ -59,6 +59,8 @@ export const messageRouter = router({
       const { chatroomId, content } = input;
       const userId = ctx.user.id;
       const isPredefined = chatrooms.findIndex(e => e.id === chatroomId);
+
+      // If chatroom creation changes adjust the middleware
       return ctx.prisma.message.create({
         data: {
           content,
@@ -84,7 +86,6 @@ export const messageRouter = router({
       return ctx.prisma.message.update({
         where: {
           id: messageId,
-          userId: ctx.user.id
         },
         data: {
           Voice: voice as Buffer

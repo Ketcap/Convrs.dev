@@ -3,7 +3,11 @@ import { createTRPCNext } from '@trpc/next';
 import superjson from 'superjson';
 import nookies from 'nookies';
 
+
 import type { AppRouter } from '../api/app';
+import { extendSuperjson } from './extendSuperjson';
+
+extendSuperjson(superjson)
 
 function getBaseUrl() {
   if (typeof window !== 'undefined')

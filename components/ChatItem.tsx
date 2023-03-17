@@ -10,7 +10,6 @@ import {
   Box,
 } from "@mantine/core";
 import { useSignal, useSignalEffect } from "@preact/signals-react";
-import { SenderType } from "@prisma/client";
 import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { ChatInput } from "../states/chatState";
@@ -37,9 +36,14 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
   useEffect(() => {
     if (audio) {
       audio.ontimeupdate = () => {
+        isPlaying.value = true;
         const currentTime = parseInt(`${audio.currentTime * 10}`);
         const duration = parseInt(`${audio.duration * 10}`);
         currentProgress.value = (currentTime / duration) * 100;
+      };
+      audio.onended = () => {
+        isPlaying.value = false;
+        currentProgress.value = 0;
       };
     }
   }, [audio]);
@@ -47,8 +51,15 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
   return (
     <Paper pos="relative">
       <Grid align={"flex-end"} m={0}>
-        {role === SenderType.Assistant && <ChatItemUser position="left" />}
-        <Grid.Col span={10} bg="#f2f2f7" sx={{ borderRadius: 4 }}>
+        <Grid.Col span={1}>
+          <ChatItemUser position="left" />
+        </Grid.Col>
+        <Grid.Col
+          span={11}
+          bg="#f2f2f7"
+          sx={{ borderRadius: 4 }}
+          pos="relative"
+        >
           {audio && (
             <Group position="apart">
               <>
@@ -58,6 +69,9 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
                   sx={{ left: 0, right: 0, top: 0, animation: "all 100ms" }}
                 />
                 <ActionIcon
+                  pos={"absolute"}
+                  right={16}
+                  top={16}
                   onClick={() => {
                     const isPlayAction = isPlaying.value;
 
@@ -86,7 +100,6 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
             </Text>
           </TypographyStylesProvider>
         </Grid.Col>
-        {role === SenderType.User && <ChatItemUser position="right" />}
       </Grid>
     </Paper>
   );

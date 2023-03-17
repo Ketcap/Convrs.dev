@@ -8,3 +8,11 @@ export default trpcNext.createNextApiHandler({
   createContext,
   batching: { enabled: true }
 });
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb' // Set desired value here
+    }
+  }
+}

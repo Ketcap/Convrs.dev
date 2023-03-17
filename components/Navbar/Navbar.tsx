@@ -1,11 +1,7 @@
-import {
-  Box,
-  LoadingOverlay,
-  Navbar as MantineNavbar,
-  Stack,
-} from "@mantine/core";
+import { Box, Stack, UnstyledButton } from "@mantine/core";
 import { trpc } from "../../lib/trpcClient";
 import { user } from "../../states/authentication";
+import { currentChatroom } from "../../states/chatrooms";
 import { navbarState } from "../../states/navbarState";
 import { ChatRoomItem } from "./ChatRoomItem";
 import { ProfileButton } from "./ProfileButton";
@@ -19,6 +15,11 @@ export const Navbar = () => {
       retry: false,
       enabled: !!user.value?.id,
       refetchOnWindowFocus: false,
+      onSuccess: (data) => {
+        if (data.length > 0) {
+          currentChatroom.value = data[data.length - 1].id;
+        }
+      },
     }),
     t.chatroom.getPredefinedRooms(undefined, {
       retry: false,
@@ -40,16 +41,42 @@ export const Navbar = () => {
       }}
     >
       <Stack justify={"space-between"} w="100%">
-        <Stack>
-          {chatrooms?.map((room, index) => (
-            <ChatRoomItem {...room} key={index} />
-          ))}
+        <Stack
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 5,
+            overflow: "auto",
+          }}
+        >
+          <UnstyledButton
+            sx={{ ":hover": { background: "#f2f2f7" }, padding: 4 }}
+            onClick={() => {
+              currentChatroom.value = undefined;
+            }}
+          >
+            Start a new chat
+          </UnstyledButton>
+          {chatrooms?.map(
+            ({ createdAt: _, directives: __, ...room }, index) => (
+              <ChatRoomItem {...room} key={index} />
+            )
+          )}
         </Stack>
-        <Stack bottom={0}>
+        <Stack
+          bottom={0}
+          sx={{ display: "flex", flexDirection: "column", flex: 1 }}
+        >
           {defaultRooms?.map((room, index) => (
             <ChatRoomItem {...room} key={index} />
           ))}
-          {user.value && <ProfileButton image="/ai-2.png" {...user.value} />}
+          {user.value && (
+            <ProfileButton
+              image="/ai-2.png"
+              email={user.value.email}
+              name={user.value.name}
+            />
+          )}
         </Stack>
       </Stack>
     </Box>

@@ -24,9 +24,29 @@ export const addChatInput = async (input: ChatInput) => {
   return chatInput;
 }
 
-export const addVoiceToChatInput = (id: string, voice: ArrayBuffer) => {
+export const editChatInput = async (id: string, content: string) => {
+  const markdown = await renderMarkdown(content);
+  chatState.value = chatState.value.map((chat) => {
+    if (chat.id === id) {
+      return {
+        ...chat,
+        content,
+        markdown
+      }
+    }
+    return chat
+  });
+}
+
+export const createAudio = (voice: ArrayBuffer) => {
+
   const audioUrl = URL.createObjectURL(new Blob([new Uint8Array(voice)]));
   const audio = new Audio(audioUrl);
+  return audio;
+}
+
+export const addVoiceToChatInput = (id: string, voice: ArrayBuffer) => {
+  const audio = createAudio(voice);
   chatState.value = chatState.value.map((chat) => {
     if (chat.id === id) {
       return {
@@ -45,7 +65,8 @@ export const initializeChat = async (messages: Message[]) => {
       id: message.id,
       role: message.senderType,
       content: message.content,
-      timestamp: message.createdAt
+      timestamp: message.createdAt,
+      audio: message.Voice ? createAudio(message.Voice) : undefined
     })
   })
   )

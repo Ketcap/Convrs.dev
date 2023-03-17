@@ -10,8 +10,8 @@ import { AIAvatar } from "./AIAvatar";
 
 export const Header = () => {
   return (
-    <MantineHeader height={55} pos="sticky" zIndex={10}>
-      <Group w="100%" h="100%" px={16}>
+    <MantineHeader height={55} pos="sticky" zIndex={10} p="sm">
+      <Group w="100%" h="100%">
         <Burger
           opened={navbarState.value}
           onClick={() => (navbarState.value = !navbarState.value)}

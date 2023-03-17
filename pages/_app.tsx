@@ -12,7 +12,7 @@ function App({ Component, pageProps }: AppProps) {
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <Notifications position="top-right" />
-      <Container sx={{ display: "flex", flexDirection: "column" }} p={0}>
+      <Box w={"100%"} sx={{ display: "flex", flexDirection: "column" }} p={0}>
         <Header />
         <Box sx={{ display: "flex", flex: 1 }}>
           <Box pos="relative" bg="#fff">
@@ -31,7 +31,7 @@ function App({ Component, pageProps }: AppProps) {
             <Component {...pageProps} />
           </Box>
         </Box>
-      </Container>
+      </Box>
       <Authentication />
     </MantineProvider>
   );

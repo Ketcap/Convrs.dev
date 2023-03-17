@@ -21,6 +21,7 @@ import {
   initializeChat,
 } from "../states/chatState";
 import { getVoiceOutput } from "../states/elevenLabs";
+import { addMessageAsStream } from "../lib/chat";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
@@ -46,19 +47,7 @@ export default function Home() {
       cacheTime: 0,
       onError: onErrorHandler,
       onSuccess: async (data) => {
-        getVoiceOutput(data.content, data.id, voiceToMessageMutation).then(
-          (res) => {
-            if (res) {
-              addVoiceToChatInput(data.id, res);
-            }
-          }
-        );
-        addChatInput({
-          content: data.content,
-          role: data.senderType,
-          id: data.id,
-          timestamp: data.createdAt,
-        });
+        addMessageAsStream(data);
       },
     });
   const { mutateAsync: sendMessage } =
