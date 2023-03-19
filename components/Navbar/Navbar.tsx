@@ -17,7 +17,7 @@ export const Navbar = () => {
       refetchOnWindowFocus: false,
       onSuccess: (data) => {
         if (data.length > 0) {
-          currentChatroom.value = data[data.length - 1].id;
+          currentChatroom.value = { id: data[data.length - 1].id };
         }
       },
     }),

@@ -8,7 +8,7 @@ export const createOpenAI = (key: string) => {
     })
   )
 }
-export const createStream = (res: Request, onFinish: (text: string) => void) => {
+export const createStream = (req: Request, onFinish: (text: string) => void) => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   let message = '';
@@ -39,7 +39,7 @@ export const createStream = (res: Request, onFinish: (text: string) => void) => 
 
       const parser = createParser(onParse);
 
-      for await (const chunk of res.body as any) {
+      for await (const chunk of req.body as any) {
         const text = decoder.decode(chunk)
         console.log(text);
         parser.feed(text);

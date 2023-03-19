@@ -1,13 +1,12 @@
 import { httpBatchLink } from '@trpc/client';
 import { createTRPCNext } from '@trpc/next';
 import superjson from 'superjson';
-import nookies from 'nookies';
-
 
 import type { AppRouter } from '../api/app';
+import { refreshToken, token } from '../states/authentication';
 import { extendSuperjson } from './extendSuperjson';
 
-extendSuperjson(superjson)
+extendSuperjson(superjson);
 
 function getBaseUrl() {
   if (typeof window !== 'undefined')
@@ -22,13 +21,15 @@ function getBaseUrl() {
 }
 export const trpc = createTRPCNext<AppRouter>({
   config({ ctx }) {
-    const { token } = nookies.get(null, 'token')
     return {
       transformer: superjson,
       links: [
         httpBatchLink({
-          headers: {
-            Authorization: `${token}`
+          headers() {
+            return {
+              authorization: token.peek(),
+              refreshToken: refreshToken.peek(),
+            };
           },
           url: `${getBaseUrl()}/api/trpc`,
         }),

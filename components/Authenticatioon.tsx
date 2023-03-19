@@ -14,7 +14,6 @@ import {
   Box,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import nookies from "nookies";
 import { showNotification } from "@mantine/notifications";
 
 import { user } from "../states/authentication";
@@ -23,37 +22,31 @@ import { z } from "zod";
 import { IconX } from "@tabler/icons-react";
 import { trpc } from "../lib/trpcClient";
 import { onErrorHandler } from "../lib/trpcUtils";
+import { setAuthentication } from "../lib/authentication";
 
 export const Authentication = () => {
   const [type, toggle] = useToggle(["login", "register"] as const);
-  const { data, isLoading, refetch } = trpc.user.me.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-    retry: 0,
-    cacheTime: 0,
-    onSuccess: (data) => {
-      user.value = data;
-    },
-  });
+  const { data, isLoading, refetch, isFetched } = trpc.user.me.useQuery(
+    undefined,
+    {
+      refetchOnWindowFocus: false,
+      retry: 0,
+      cacheTime: 0,
+      onSuccess: (data) => {
+        user.value = data;
+      },
+    }
+  );
   const { mutate: login } = trpc.authentication.signIn.useMutation({
     onError: onErrorHandler,
     onSuccess: (data) => {
-      if (!data.session?.access_token) return;
-      nookies.set(null, "token", data.session?.access_token, {
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60,
-      });
-      refetch();
+      setAuthentication(data, refetch);
     },
   });
   const { mutate: register } = trpc.authentication.signUp.useMutation({
     onError: onErrorHandler,
     onSuccess: (data) => {
-      if (!data.session?.access_token) return;
-      nookies.set(null, "token", data.session?.access_token, {
-        path: "/",
-        maxAge: 30 * 24 * 60 * 60,
-      });
-      refetch();
+      setAuthentication(data, refetch);
     },
   });
 
@@ -107,7 +100,7 @@ export const Authentication = () => {
       withCloseButton={false}
       centered
     >
-      {isLoading ? (
+      {isFetched && isLoading ? (
         <Group position="center">
           <Loader />
         </Group>

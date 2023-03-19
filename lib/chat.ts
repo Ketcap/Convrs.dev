@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { SenderType } from "@prisma/client";
+import type { SenderType } from "@prisma/client";
 import { addChatInput, editChatInput } from "../states/chatState";
 
 export const addMessageAsStream = async (data: ReadableStream<any>) => {
@@ -13,16 +13,17 @@ export const addMessageAsStream = async (data: ReadableStream<any>) => {
 
   while (!done) {
     const { value, done: doneReading } = await reader.read();
+    console.log(value)
     done = doneReading;
     const chunkValue = decoder.decode(value);
-
+    console.log(chunkValue)
     text += chunkValue;
 
     if (isFirst) {
       isFirst = false;
       addChatInput({
         content: chunkValue,
-        role: SenderType.Assistant,
+        role: 'assistant' as SenderType,
         id: id,
         timestamp: new Date(),
       });

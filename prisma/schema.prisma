@@ -26,7 +26,9 @@ model User {
 
 enum RoomType {
   Chat
-  PreDefined
+  Summarize
+  Explanation
+  Tutor
 }
 
 model Chatroom {
@@ -39,7 +41,7 @@ model Chatroom {
   createdAt DateTime  @default(now())
   Messages  Message[]
 
-  directives String[]
+  directives Json[]
   roomType   RoomType
 }
 
@@ -49,7 +51,7 @@ model Message {
   User   User?   @relation(fields: [userId], references: [id])
   userId String?
 
-  Chatroom   Chatroom @relation(fields: [chatroomId], references: [id])
+  Chatroom   Chatroom @relation(fields: [chatroomId], references: [id], onDelete: Cascade)
   chatroomId String
 
   content String

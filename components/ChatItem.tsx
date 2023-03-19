@@ -11,7 +11,6 @@ import {
 } from "@mantine/core";
 import { useSignal, useSignalEffect } from "@preact/signals-react";
 import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
-import { useEffect } from "react";
 import { ChatInput } from "../states/chatState";
 import { AIAvatar } from "./AIAvatar";
 
@@ -33,7 +32,7 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
   const currentProgress = useSignal(0);
   const isPlaying = useSignal(false);
 
-  useEffect(() => {
+  useSignalEffect(() => {
     if (audio) {
       audio.ontimeupdate = () => {
         isPlaying.value = true;
@@ -46,7 +45,7 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
         currentProgress.value = 0;
       };
     }
-  }, [audio]);
+  });
 
   return (
     <Paper pos="relative">

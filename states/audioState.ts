@@ -25,7 +25,7 @@ export const getAudioStream = async () => {
 let mediaRecorder: MediaRecorder | null = null;
 let stream: MediaStream | null = null;
 
-export const startRecording = async () => {
+export const startRecording = async (fn: (text: string) => void) => {
   stream = await getAudioStream();
   if (!stream) return;
   mediaRecorder = new MediaRecorder(stream);
@@ -37,7 +37,7 @@ export const startRecording = async () => {
     stream?.getTracks().forEach((track) => track.stop());
     mediaRecorder = null;
     stream = null;
-    onRecordingStop(chunks);
+    onRecordingStop(chunks, fn);
   };
   mediaRecorder.start();
 }

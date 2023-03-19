@@ -24,7 +24,7 @@ export const OpenAI = () => {
   );
   const form = useForm({
     initialValues: {
-      key: `${openAIConfig?.key}`,
+      key: openAIConfig?.key ?? "",
       // model: "", // to be added
     },
     validate: {
