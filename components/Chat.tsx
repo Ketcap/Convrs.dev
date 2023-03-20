@@ -1,5 +1,4 @@
 import { Grid } from "@mantine/core";
-import { SenderType } from "@prisma/client";
 import { chatState } from "../states/chatState";
 import { ChatItem } from "./ChatItem";
 

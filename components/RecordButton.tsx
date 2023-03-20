@@ -1,5 +1,11 @@
 import { Box } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import {
+  IconMicrophone,
+  IconMicrophone2,
+  IconPlayerStop,
+  IconPlayerStopFilled,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { isMicrophoneAllowed } from "../states/audioState";
 
@@ -24,6 +30,9 @@ export const RecordButton = ({ onClick }: RecordButtonProps) => {
         transition: "all 200ms linear",
         borderRadius: isRecording ? 10 : "50%",
         background: isMicAvailable ? "red" : "gray",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
       }}
       onClick={async () => {
         if (!isMicAvailable) {
@@ -39,6 +48,12 @@ export const RecordButton = ({ onClick }: RecordButtonProps) => {
         await onClick(nextState);
         setIsRecording(nextState);
       }}
-    />
+    >
+      {isRecording ? (
+        <IconPlayerStop color="#fff" />
+      ) : (
+        <IconMicrophone color="#fff" />
+      )}
+    </Box>
   );
 };

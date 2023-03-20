@@ -41,7 +41,6 @@ export const createStream = (req: Request, onFinish: (text: string) => void) => 
 
       for await (const chunk of req.body as any) {
         const text = decoder.decode(chunk)
-        console.log(text);
         parser.feed(text);
       }
     }

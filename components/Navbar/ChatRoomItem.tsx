@@ -1,8 +1,12 @@
 import { ActionIcon, Group, Text, UnstyledButton } from "@mantine/core";
-import { Chatroom } from "@prisma/client";
+import { Chatroom, RoomType } from "@prisma/client";
 import { IconTrash } from "@tabler/icons-react";
 import { trpc } from "../../lib/trpcClient";
-import { currentChatroom } from "../../states/chatrooms";
+import {
+  currentChatroom,
+  CurrentChatroomId,
+  CurrentChatroomType,
+} from "../../states/chatrooms";
 import { AIAvatar } from "../AIAvatar";
 
 export interface ChatRoomItemProps extends Pick<Chatroom, "name" | "roomType"> {
@@ -10,16 +14,21 @@ export interface ChatRoomItemProps extends Pick<Chatroom, "name" | "roomType"> {
   imageSrc?: string;
 }
 
+const predefinedRooms: RoomType[] = [
+  RoomType.Explanation,
+  RoomType.Summarize,
+  RoomType.Tutor,
+];
 export const ChatRoomItem = ({
   imageSrc,
   name,
   id,
   roomType,
 }: ChatRoomItemProps) => {
-  const { refetch } = trpc.chatroom.getChatrooms.useQuery(undefined, {
-    refetchOnWindowFocus: false,
-    retry: 0,
-  });
+  const isActive =
+    (currentChatroom.value as CurrentChatroomId)?.id &&
+    (currentChatroom.value as CurrentChatroomId)?.id === id;
+  const { refetch } = trpc.chatroom.getChatrooms.useQuery(undefined, {});
   const { mutateAsync } = trpc.chatroom.deleteChatroom.useMutation({
     onSuccess: () => {
       refetch();
@@ -27,10 +36,16 @@ export const ChatRoomItem = ({
   });
   return (
     <UnstyledButton
-      sx={{ ":hover": { background: "#f2f2f7" }, padding: 4 }}
+      sx={{
+        background: isActive ? "#f2f2f7" : "transparent",
+        ":hover": {
+          background: "#f2f2f7",
+        },
+        padding: 4,
+      }}
       onClick={() => {
-        if (id) currentChatroom.value = { id };
-        if (roomType) currentChatroom.value = { roomType };
+        if (id) return (currentChatroom.value = { id });
+        if (roomType) return (currentChatroom.value = { roomType });
       }}
     >
       <Group position="apart">
@@ -42,6 +57,9 @@ export const ChatRoomItem = ({
           onClick={() => {
             if (id) {
               mutateAsync({ chatroomId: id });
+            }
+            if (isActive) {
+              currentChatroom.value = undefined;
             }
           }}
         >

@@ -21,6 +21,7 @@ import {
   initializeChat,
 } from "../states/chatState";
 import { getVoiceOutput } from "../states/elevenLabs";
+import { notifications } from "@mantine/notifications";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
@@ -37,8 +38,7 @@ export default function Home() {
       },
       {
         enabled: !!chatroomId || !!roomType,
-        refetchOnWindowFocus: false,
-        retry: false,
+
         onSuccess: async (data) => {
           initializeChat(data);
         },
@@ -77,9 +77,8 @@ export default function Home() {
           content: data.content,
         });
         if (data.chatroomId !== currentChatroom.peek()?.id) {
-          refetch().then(() => {
-            currentChatroom.value = { id: data.chatroomId };
-          });
+          currentChatroom.value = { id: data.chatroomId };
+          refetch();
         }
         addChatInput({
           content: data.content,
@@ -101,6 +100,15 @@ export default function Home() {
   };
 
   const onVoiceSend = (input: string) => {
+    if (!input) {
+      notifications.show({
+        title: "Nothing has said",
+        message:
+          "Please try to speak when you press the button and make sure you are speaking to the microphone",
+        color: "red",
+      });
+      return;
+    }
     const val = ref.current!.value;
     sendMessage({
       content: `${input}  ${val}`,

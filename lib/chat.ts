@@ -2,6 +2,7 @@ import { createId } from "@paralleldrive/cuid2";
 import type { SenderType } from "@prisma/client";
 import { addChatInput, editChatInput } from "../states/chatState";
 
+// this should be added after response
 export const addMessageAsStream = async (data: ReadableStream<any>) => {
   const reader = data.getReader();
   const decoder = new TextDecoder();
@@ -39,4 +40,4 @@ export const addMessageAsStream = async (data: ReadableStream<any>) => {
 //       addVoiceToChatInput(data.id, res);
 //     }
 //   }
-// );
+// ); 

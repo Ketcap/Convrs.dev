@@ -29,6 +29,7 @@ enum RoomType {
   Summarize
   Explanation
   Tutor
+  OaksLab
 }
 
 model Chatroom {

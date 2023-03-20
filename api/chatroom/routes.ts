@@ -74,7 +74,7 @@ export const messageRouter = router({
       const { chatroomId, content, roomType } = input;
       const userId = ctx.user.id;
       const predefinedRoom = findChatroom(roomType);
-      console.log(roomType, predefinedRoom)
+
 
       // If chatroom creation changes adjust the middleware
       return ctx.prisma.message.create({

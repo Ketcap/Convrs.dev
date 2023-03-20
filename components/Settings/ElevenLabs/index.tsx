@@ -68,7 +68,6 @@ export const ElevenLabs = () => {
     }
   });
 
-  console.log(voiceList.value);
   return (
     <Stack>
       <Accordion radius="md" variant="filled">

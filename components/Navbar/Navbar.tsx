@@ -12,9 +12,8 @@ export const Navbar = () => {
     { data: defaultRooms, isLoading: isDefaultRoomLoading },
   ] = trpc.useQueries((t) => [
     t.chatroom.getChatrooms(undefined, {
-      retry: false,
       enabled: !!user.value?.id,
-      refetchOnWindowFocus: false,
+
       onSuccess: (data) => {
         if (data.length > 0) {
           currentChatroom.value = { id: data[data.length - 1].id };
@@ -22,9 +21,7 @@ export const Navbar = () => {
       },
     }),
     t.chatroom.getPredefinedRooms(undefined, {
-      retry: false,
       enabled: !!user.value?.id,
-      refetchOnWindowFocus: false,
     }),
   ]);
   return (

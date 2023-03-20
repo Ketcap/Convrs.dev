@@ -19,7 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // @ts-ignore
       const tempFilePath = files.file.filepath
-      console.log(tempFilePath)
       const fileName = `${ROUTE_PATH}/${id}.mp3`;
 
       try {

@@ -1,16 +1,15 @@
 import {
   Text,
-  Stack,
   Paper,
   TypographyStylesProvider,
   Group,
   ActionIcon,
   Progress,
   Grid,
-  Box,
 } from "@mantine/core";
 import { useSignal, useSignalEffect } from "@preact/signals-react";
 import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
+import { useEffect } from "react";
 import { ChatInput } from "../states/chatState";
 import { AIAvatar } from "./AIAvatar";
 
@@ -32,7 +31,7 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
   const currentProgress = useSignal(0);
   const isPlaying = useSignal(false);
 
-  useSignalEffect(() => {
+  useEffect(() => {
     if (audio) {
       audio.ontimeupdate = () => {
         isPlaying.value = true;
@@ -65,18 +64,19 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
                 <Progress
                   value={currentProgress.value}
                   pos="absolute"
-                  sx={{ left: 0, right: 0, top: 0, animation: "all 100ms" }}
+                  sx={{ left: 0, right: 0, bottom: 0, animation: "all 100ms" }}
                 />
                 <ActionIcon
                   pos={"absolute"}
                   right={16}
-                  top={16}
+                  bottom={16}
                   onClick={() => {
                     const isPlayAction = isPlaying.value;
 
                     if (!isPlayAction) {
                       audio.currentTime = 0;
-                      audio.play();
+
+                      audio.play().catch(console.log);
                     }
                     if (isPlayAction) {
                       audio.pause();

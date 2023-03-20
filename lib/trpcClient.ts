@@ -9,33 +9,38 @@ import { extendSuperjson } from './extendSuperjson';
 extendSuperjson(superjson);
 
 function getBaseUrl() {
-  if (typeof window !== 'undefined')
+  if (typeof window !== 'undefined') {
     // browser should use relative path
     return '';
+  }
   if (process.env.VERCEL_URL as string) {
     // reference for vercel.com
     return `https://${process.env.VERCEL_URL}`
   };
-
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
 export const trpc = createTRPCNext<AppRouter>({
-  config({ ctx }) {
-    return {
-      transformer: superjson,
-      links: [
-        httpBatchLink({
-          headers() {
-            return {
-              authorization: token.peek(),
-              refreshToken: refreshToken.peek(),
-            };
-          },
-          url: `${getBaseUrl()}/api/trpc`,
-        }),
-      ],
-    };
-  },
+  config: () => ({
+    queryClientConfig: {
+      defaultOptions: {
+        queries: {
+          refetchOnWindowFocus: false,
+        },
+      },
+    },
+    transformer: superjson,
+    links: [
+      httpBatchLink({
+        headers() {
+          return {
+            authorization: token.peek(),
+            refreshToken: refreshToken.peek(),
+          };
+        },
+        url: `${getBaseUrl()}/api/trpc`,
+      }),
+    ],
+  }),
   /**
    * @link https://trpc.io/docs/ssr
    **/

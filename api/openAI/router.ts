@@ -40,7 +40,6 @@ export const openAIRouter = router({
         }
       })
       try {
-        console.log(chatroom.directives);
         const contextMessages: ChatCompletionRequestMessage[] = chatroom.Messages.map((message) => ({
           content: message.content,
           role: message.senderType === SenderType.User ? 'user' : 'assistant',

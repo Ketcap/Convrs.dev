@@ -29,8 +29,6 @@ export const Authentication = () => {
   const { data, isLoading, refetch, isFetched } = trpc.user.me.useQuery(
     undefined,
     {
-      refetchOnWindowFocus: false,
-      retry: 0,
       cacheTime: 0,
       onSuccess: (data) => {
         user.value = data;

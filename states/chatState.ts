@@ -39,8 +39,9 @@ export const editChatInput = async (id: string, content: string) => {
 }
 
 export const createAudio = (voice: ArrayBuffer) => {
-
-  const audioUrl = URL.createObjectURL(new Blob([new Uint8Array(voice)]));
+  const mimeType = 'audio/wav';
+  const blob = new Blob([voice], { type: mimeType });
+  const audioUrl = URL.createObjectURL(new Blob([blob], { type: 'audio/wav' }));
   const audio = new Audio(audioUrl);
   return audio;
 }

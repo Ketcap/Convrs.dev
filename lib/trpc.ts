@@ -37,7 +37,7 @@ const isAuth = t.middleware(async ({ next, ctx }) => {
     });
   }
   catch (e) {
-    console.log(e)
+    console.error(e)
     throw new Error('Not Authenticated');
   }
 });

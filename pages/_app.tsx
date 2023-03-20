@@ -8,7 +8,7 @@ import { Navbar } from "../components/Navbar/Navbar";
 import { Authentication } from "../components/Authenticatioon";
 import { trpc } from "../lib/trpcClient";
 
-function App({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps, ...rest }: AppProps) {
   return (
     <MantineProvider withGlobalStyles withNormalizeCSS>
       <Notifications position="top-right" />
