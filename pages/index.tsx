@@ -11,7 +11,7 @@ import { startRecording, stopRecording } from "../states/audioState";
 import { Chat } from "../components/Chat";
 import { IconSend } from "@tabler/icons-react";
 import { useRef } from "react";
-import { currentChatroom } from "../states/chatrooms";
+import { currentChatroom, CurrentChatroomId } from "../states/chatrooms";
 import { trpc } from "../lib/trpcClient";
 import { onErrorHandler } from "../lib/trpcUtils";
 import {
@@ -76,7 +76,9 @@ export default function Home() {
           chatroomId: data.chatroomId,
           content: data.content,
         });
-        if (data.chatroomId !== currentChatroom.peek()?.id) {
+        if (
+          data.chatroomId !== (currentChatroom.peek() as CurrentChatroomId)?.id
+        ) {
           currentChatroom.value = { id: data.chatroomId };
           refetch();
         }
