@@ -33,8 +33,10 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
 
   useEffect(() => {
     if (audio) {
-      audio.ontimeupdate = () => {
+      audio.onplaying = () => {
         isPlaying.value = true;
+      };
+      audio.ontimeupdate = () => {
         const currentTime = parseInt(`${audio.currentTime * 10}`);
         const duration = parseInt(`${audio.duration * 10}`);
         currentProgress.value = (currentTime / duration) * 100;
