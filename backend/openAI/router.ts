@@ -2,7 +2,7 @@ import { Application, SenderType } from "@prisma/client";
 import { ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum, Configuration, OpenAIApi } from "openai";
 import { z } from "zod";
 import { privateProcedure, router, t } from "@/lib/trpc";
-import { getConfigOrThrow } from "@/api/util/config";
+import { getConfigOrThrow } from "@/backend/util/config";
 import { createOpenAI, createStream } from "./util";
 
 const openAIProcedure = privateProcedure.use(async ({ next, ctx }) => {

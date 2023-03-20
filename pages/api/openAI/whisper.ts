@@ -5,7 +5,7 @@ import { createReadStream, readFileSync } from "fs";
 import { createId } from '@paralleldrive/cuid2';
 import path from "path";
 import formidable from 'formidable';
-import { openAIRouter } from "../../../api/openAI/router";
+import { openAIRouter } from "../../../backend/openAI/router";
 import { createContext } from "../../../lib/context";
 
 const ROUTE_PATH = path.resolve(path.join(process.cwd(), '/public/temp_voices'));

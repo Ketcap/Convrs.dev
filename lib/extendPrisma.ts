@@ -1,5 +1,5 @@
 import { Application, Chatroom, ConfigType, Message, Prisma, PrismaClient } from "@prisma/client";
-import { createOpenAI } from "../api/openAI/util";
+import { createOpenAI } from "../backend/openAI/util";
 
 export const extendPrisma = (prisma: PrismaClient) => {
   // prisma.$use(async (params, next) => {
