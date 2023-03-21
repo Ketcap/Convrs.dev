@@ -16,6 +16,7 @@ export const ChatRoomItem = ({ imageSrc, chatroom }: ChatRoomItemProps) => {
   const { mutateAsync } = trpc.chatroom.deleteChatroom.useMutation({
     onSuccess: () => {
       refetch();
+      currentChatroom.value = undefined;
     },
   });
   return (
