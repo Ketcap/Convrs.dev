@@ -24,26 +24,19 @@ model User {
   Configs Config[]
 }
 
-enum RoomType {
-  Chat
-  Summarize
-  Explanation
-  Tutor
-  OaksLab
-}
-
 model Chatroom {
-  id   String  @id @default(cuid())
-  name String? // Optional name for the chatroom
+  id String @id @default(cuid())
+
+  name      String // Optional name for the chatroom
+  model     String // OpenAI model used for the chatroom
+  voice     String? // Voice used for the chatroom
+  directive String?
 
   userId String // The user who created the chatroom
   User   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime  @default(now())
   Messages  Message[]
-
-  directives Json[]
-  roomType   RoomType
 }
 
 model Message {

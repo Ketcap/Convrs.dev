@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 import { Application } from "@prisma/client";
 import { z } from "zod";
 import { trpc } from "../../../lib/trpcClient";
@@ -16,8 +17,21 @@ import { onErrorHandler } from "../../../lib/trpcUtils";
 import { user } from "../../../states/authentication";
 
 export const OpenAI = () => {
+  const { refetch } = trpc.openAI.getModels.useQuery(undefined, {
+    enabled: false,
+    onError: () => {
+      notifications.show({
+        title: "OpenAI cannot be loaded",
+        message: "Check your API key to make sure you have entered correctly.",
+        color: "red",
+      });
+    },
+  });
   const { data, isLoading, mutateAsync } = trpc.user.config.useMutation({
     onError: onErrorHandler,
+    onSuccess: async () => {
+      refetch();
+    },
   });
   const openAIConfig = user?.value?.Configs.find(
     (e) => e.application === Application.OpenAI

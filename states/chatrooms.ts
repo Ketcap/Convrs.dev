@@ -1,17 +1,5 @@
-import { effect, signal } from "@preact/signals-react";
-import { RoomType } from "@prisma/client";
-import { chatState } from "./chatState";
+import { signal } from "@preact/signals-react";
+import { Chatroom } from "@prisma/client";
 
-export type CurrentChatroomId = { id: string }
-export type CurrentChatroomType = { roomType: RoomType }
+export const currentChatroom = signal<Chatroom | undefined>(undefined);
 
-export const currentChatroom = signal<CurrentChatroomId | CurrentChatroomType | undefined>(undefined);
-
-export const chatrooms = signal([])
-
-
-effect(() => {
-  if (!currentChatroom.value) {
-    chatState.value = []
-  }
-})

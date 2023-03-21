@@ -1,6 +1,7 @@
-import { signal } from "@preact/signals-react";
+import { effect, signal } from "@preact/signals-react";
 import { renderMarkdown } from "../lib/renderMarkdown";
 import { Message, SenderType } from "@prisma/client";
+import { currentChatroom } from "./chatrooms";
 
 export interface ChatInput {
   id: string;
@@ -12,6 +13,12 @@ export interface ChatInput {
 }
 
 export const chatState = signal<ChatInput[]>([]);
+
+effect(() => {
+  if (!currentChatroom.value) {
+    chatState.value = []
+  }
+})
 
 export const addChatInput = async (input: ChatInput) => {
   // make each chat input a signal so we can update it later

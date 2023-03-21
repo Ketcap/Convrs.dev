@@ -1,9 +1,9 @@
 import { Application, SenderType } from "@prisma/client";
-import { ChatCompletionRequestMessage, ChatCompletionRequestMessageRoleEnum, Configuration, OpenAIApi } from "openai";
+import { ChatCompletionRequestMessage } from "openai";
 import { z } from "zod";
 import { privateProcedure, router, t } from "@/lib/trpc";
 import { getConfigOrThrow } from "@/backend/util/config";
-import { createOpenAI, createStream } from "./util";
+import { createOpenAI } from "./util";
 
 const openAIProcedure = privateProcedure.use(async ({ next, ctx }) => {
   try {
@@ -21,6 +21,16 @@ const openAIProcedure = privateProcedure.use(async ({ next, ctx }) => {
 });
 
 export const openAIRouter = router({
+  getModels: openAIProcedure
+    .query(async ({ ctx }) => {
+      const models = await ctx.openAI.listModels();
+      if (models.status !== 200) {
+        throw new Error('Error while fetching models');
+      }
+      return [
+        'gpt-3.5-turbo', 'gpt-3.5-turbo-0301'
+      ];
+    }),
   getCompletion: openAIProcedure
     .input(z.object({
       chatroomId: z.string(),
@@ -45,17 +55,20 @@ export const openAIRouter = router({
           role: message.senderType === SenderType.User ? 'user' : 'assistant',
           name: message.senderType === SenderType.User ? ctx.user.name : 'assistant'
         }));
+        const directive: [ChatCompletionRequestMessage] | [] = chatroom.directive ? [{
+          content: chatroom.directive,
+          role: 'system',
+          name: 'System'
+        }] : []
         const completion = await ctx.openAI.createChatCompletion({
-          messages: [...(chatroom.directives as any[]), ...contextMessages, {
+          messages: [...directive, ...contextMessages, {
             content,
             role: 'user',
-            name: ctx.user.name || undefined
+            name: ctx.user.name
           }],
-          model: "gpt-3.5-turbo-0301", // use it from the list of models
+          model: chatroom.model,
           temperature: 0.2,
           max_tokens: 250,
-          // stream: true
-          // responseType: 'stream'
         })
 
         if (completion.data.choices.length === 0) {

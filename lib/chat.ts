@@ -14,10 +14,8 @@ export const addMessageAsStream = async (data: ReadableStream<any>) => {
 
   while (!done) {
     const { value, done: doneReading } = await reader.read();
-    console.log(value)
     done = doneReading;
     const chunkValue = decoder.decode(value);
-    console.log(chunkValue)
     text += chunkValue;
 
     if (isFirst) {

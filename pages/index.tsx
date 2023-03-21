@@ -1,7 +1,7 @@
 import {
   ActionIcon,
+  Alert,
   Box,
-  Button,
   Group,
   LoadingOverlay,
   Textarea,
@@ -9,9 +9,9 @@ import {
 import { RecordButton } from "../components/RecordButton";
 import { startRecording, stopRecording } from "../states/audioState";
 import { Chat } from "../components/Chat";
-import { IconSend } from "@tabler/icons-react";
+import { IconExclamationMark, IconSend } from "@tabler/icons-react";
 import { useRef } from "react";
-import { currentChatroom, CurrentChatroomId } from "../states/chatrooms";
+import { currentChatroom } from "../states/chatrooms";
 import { trpc } from "../lib/trpcClient";
 import { onErrorHandler } from "../lib/trpcUtils";
 import {
@@ -25,20 +25,16 @@ import { notifications } from "@mantine/notifications";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
-  // @ts-ignore
-  const { id: chatroomId = undefined, roomType = undefined } =
-    currentChatroom.value ?? {};
+  const { id: currentChatRoomId, voice } = currentChatroom.value ?? {};
   const { mutateAsync: voiceToMessageMutation } =
     trpc.message.addVoiceToMessage.useMutation();
   const { isLoading: isChatroomLoading } =
     trpc.message.getChatroomMessages.useQuery(
       {
-        chatroomId,
-        roomType,
+        chatroomId: currentChatRoomId!,
       },
       {
-        enabled: !!chatroomId || !!roomType,
-
+        enabled: !!currentChatRoomId,
         onSuccess: async (data) => {
           initializeChat(data);
         },
@@ -49,13 +45,18 @@ export default function Home() {
       cacheTime: 0,
       onError: onErrorHandler,
       onSuccess: async (data) => {
-        getVoiceOutput(data.content, data.id, voiceToMessageMutation).then(
-          (res) => {
+        if (voice) {
+          getVoiceOutput({
+            output: data.content,
+            messageId: data.id,
+            voiceKey: voice,
+            mutateAsync: voiceToMessageMutation,
+          }).then((res) => {
             if (res) {
               addVoiceToChatInput(data.id, res);
             }
-          }
-        );
+          });
+        }
         addChatInput({
           content: data.content,
           role: data.senderType,
@@ -64,9 +65,7 @@ export default function Home() {
         });
       },
     });
-  const { refetch } = trpc.chatroom.getChatrooms.useQuery(undefined, {
-    enabled: false,
-  });
+
   const { mutateAsync: sendMessage } =
     trpc.message.sendMessageToChatroom.useMutation({
       cacheTime: 0,
@@ -76,12 +75,6 @@ export default function Home() {
           chatroomId: data.chatroomId,
           content: data.content,
         });
-        if (
-          data.chatroomId !== (currentChatroom.peek() as CurrentChatroomId)?.id
-        ) {
-          currentChatroom.value = { id: data.chatroomId };
-          refetch();
-        }
         addChatInput({
           content: data.content,
           role: data.senderType,
@@ -92,16 +85,16 @@ export default function Home() {
     });
   const onSend = () => {
     const val = ref.current!.value;
-    if (!val) return;
+    if (!val || !currentChatRoomId) return;
     sendMessage({
       content: val,
-      chatroomId: chatroomId,
-      roomType: roomType,
+      chatroomId: currentChatRoomId,
     });
     ref.current!.value = "";
   };
 
   const onVoiceSend = (input: string) => {
+    if (!currentChatRoomId) return;
     if (!input) {
       notifications.show({
         title: "Nothing has said",
@@ -114,11 +107,11 @@ export default function Home() {
     const val = ref.current!.value;
     sendMessage({
       content: `${input}  ${val}`,
-      chatroomId: chatroomId,
-      roomType: roomType,
+      chatroomId: currentChatRoomId,
     });
     ref.current!.value = "";
   };
+
   return (
     <>
       <Box
@@ -130,25 +123,39 @@ export default function Home() {
         }}
         p="md"
       >
-        <Chat />
+        {currentChatRoomId ? (
+          <Chat />
+        ) : (
+          <Box sx={{ flex: 1 }}>
+            <Alert
+              icon={<IconExclamationMark size="1rem" />}
+              title="Before you continue!"
+              radius="xs"
+              variant="outline"
+            >
+              Please make sure you have your OpenAI settings set up correctly.
+              And create / select a room before you continue
+            </Alert>
+          </Box>
+        )}
       </Box>
       <Box pos="sticky" bg="white" bottom={0} py={10}>
-        <LoadingOverlay
-          visible={
-            isThinking || (isChatroomLoading && !!chatroomId && !!roomType)
-          }
-        />
+        {currentChatRoomId && (
+          <LoadingOverlay visible={isThinking || isChatroomLoading} />
+        )}
         <Group align={"center"}>
           <Textarea
             ref={(inputRef) => (ref.current = inputRef!)}
             placeholder="If you have any input that you have copied from somewhere, paste it here then follow up with the recording button to talk about it."
             sx={{ display: "flex", flex: 1 }}
             wrapperProps={{ sx: { flex: 1 } }}
+            disabled={isChatroomLoading || isThinking || !currentChatRoomId}
           />
-          <ActionIcon>
+          <ActionIcon disabled={!currentChatRoomId}>
             <IconSend onClick={onSend} />
           </ActionIcon>
           <RecordButton
+            disabled={isChatroomLoading || isThinking || !currentChatRoomId}
             onClick={async (state) =>
               state ? startRecording(onVoiceSend) : stopRecording()
             }

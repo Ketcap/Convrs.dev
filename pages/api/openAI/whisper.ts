@@ -1,14 +1,11 @@
-import { Configuration, OpenAIApi } from "openai";
 import { NextApiRequest, NextApiResponse } from "next";
 import fs from 'fs/promises';
 import { createReadStream, readFileSync } from "fs";
 import { createId } from '@paralleldrive/cuid2';
-import path from "path";
 import formidable from 'formidable';
 import { openAIRouter } from "../../../backend/openAI/router";
 import { createContext } from "../../../lib/context";
 
-const ROUTE_PATH = path.resolve(path.join(process.cwd(), '/public/temp_voices'));
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
@@ -19,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // @ts-ignore
       const tempFilePath = files.file.filepath
-      const fileName = `${ROUTE_PATH}/${id}.mp3`;
+      const fileName = `/tmp/${id}.mp3`;
 
       try {
         await fs.writeFile(fileName, readFileSync(tempFilePath), {
@@ -30,7 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           'whisper-1'
         );
         res.status(200).json({
-          text: transcript.data.text
+          message: transcript.data.text
         });
       } catch (e) {
         res.status(400).json({

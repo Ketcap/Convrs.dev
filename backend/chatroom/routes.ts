@@ -1,19 +1,37 @@
-import { RoomType, SenderType } from "@prisma/client";
+import { SenderType } from "@prisma/client";
 import { z } from "zod";
 import { privateProcedure, router } from "@/lib/trpc";
-import { chatrooms, findChatroom } from "./chatrooms";
+
+
+const createChatroomInput = z.object({
+  name: z.string(),
+  openAIModel: z.string(),
+  directive: z.string(),
+  voice: z.string(),
+})
+
 
 
 export const chatroomRouter = router({
+  create: privateProcedure
+    .input(createChatroomInput)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.chatroom.create({
+        data: {
+          name: input.name,
+          userId: ctx.user.id,
+          voice: input.voice,
+          directive: input.directive,
+          model: input.openAIModel,
+        }
+      })
+    }),
   getChatrooms: privateProcedure.query(async ({ ctx }) => {
     return ctx.prisma.chatroom.findMany({
       where: {
         userId: ctx.user.id
       }
     })
-  }),
-  getPredefinedRooms: privateProcedure.query(async ({ ctx }) => {
-    return chatrooms
   }),
   deleteChatroom: privateProcedure
     .input(z.object({
@@ -31,31 +49,28 @@ export const chatroomRouter = router({
 })
 
 const getChatroomMessagesInput = z.object({
-  chatroomId: z.string().optional(),
-  roomType: z.nativeEnum(RoomType).optional(),
+  chatroomId: z.string(),
   page: z.number().optional().default(1)
 })
 
 const sendMessageToChatroomInput = z.object({
-  chatroomId: z.string().optional(),
+  chatroomId: z.string(),
   content: z.string(),
-  roomType: z.nativeEnum(RoomType).optional()
 })
 
+
 export const messageRouter = router({
+
   getChatroomMessages: privateProcedure
     .input(getChatroomMessagesInput)
     .query(async ({ ctx, input }) => {
-      const { chatroomId, roomType, page } = input;
-      if (!chatroomId && !roomType) throw new Error('Either chatroomId or roomType is required');
+      const { chatroomId, page } = input;
       const limit = 50;
       return ctx.prisma.message.findMany({
         where: {
           Chatroom: {
-            ...(chatroomId ? {
-              userId: ctx.user.id,
-              id: chatroomId
-            } : { roomType: roomType, userId: ctx.user.id })
+            userId: ctx.user.id,
+            id: chatroomId
           }
         },
         take: limit,
@@ -71,27 +86,17 @@ export const messageRouter = router({
   sendMessageToChatroom: privateProcedure
     .input(sendMessageToChatroomInput)
     .mutation(async ({ ctx, input }) => {
-      const { chatroomId, content, roomType } = input;
+      const { chatroomId, content } = input;
       const userId = ctx.user.id;
-      const predefinedRoom = findChatroom(roomType);
 
 
-      // If chatroom creation changes adjust the middleware
       return ctx.prisma.message.create({
         data: {
           content,
           senderType: SenderType.User,
           User: { connect: { id: userId } },
           Chatroom: {
-            ...(chatroomId ?
-              { connect: { id: chatroomId } } :
-              {
-                create: {
-                  name: 'New Chat', userId, roomType: roomType ?? RoomType.Chat, directives: {
-                    set: predefinedRoom?.systemDirectives as any[] ?? []
-                  }
-                }
-              })
+            connect: { id: chatroomId }
           }
         }
       })

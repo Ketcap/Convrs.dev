@@ -11,12 +11,13 @@ import { isMicrophoneAllowed } from "../states/audioState";
 
 interface RecordButtonProps {
   onClick: (state: boolean) => Promise<void>;
+  disabled?: boolean;
 }
 
 const size = 50;
 const recordingSize = 35;
 
-export const RecordButton = ({ onClick }: RecordButtonProps) => {
+export const RecordButton = ({ onClick, disabled }: RecordButtonProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const currentSize = isRecording ? recordingSize : size;
 
@@ -35,6 +36,7 @@ export const RecordButton = ({ onClick }: RecordButtonProps) => {
         justifyContent: "center",
       }}
       onClick={async () => {
+        if (disabled) return;
         if (!isMicAvailable) {
           notifications.show({
             title: "Permission Error",

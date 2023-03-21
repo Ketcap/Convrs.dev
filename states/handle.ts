@@ -1,4 +1,5 @@
 import { notifications } from "@mantine/notifications";
+import { refreshToken, token } from "./authentication";
 
 type EndpointError = {
   error: string;
@@ -15,12 +16,16 @@ export const onRecordingStop = async (blobs: Blob[], fn: (text: string) => void)
   formData.append("file", blob);
 
   try {
-    const transcript: EndpointOutput = await fetch('/api/whisper', {
+    const transcript: EndpointOutput = await fetch('/api/openAI/whisper', {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: {
+        authorization: token.peek() ?? '',
+        refreshToken: refreshToken.peek() ?? '',
+      }
     }).then(res => res.json());
-    if ('error' in transcript) {
-      throw new Error(transcript.message)
+    if (!transcript?.message) {
+      throw new Error('No message')
     }
     fn(transcript.message);
   } catch (e) {

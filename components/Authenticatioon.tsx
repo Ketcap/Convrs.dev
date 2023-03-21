@@ -26,27 +26,26 @@ import { setAuthentication } from "../lib/authentication";
 
 export const Authentication = () => {
   const [type, toggle] = useToggle(["login", "register"] as const);
-  const { data, isLoading, refetch, isFetched } = trpc.user.me.useQuery(
-    undefined,
-    {
-      cacheTime: 0,
+  const { data, isLoading, refetch } = trpc.user.me.useQuery(undefined, {
+    cacheTime: 0,
+    onSuccess: (data) => {
+      user.value = data;
+    },
+  });
+  const { mutate: login, isLoading: signInLoading } =
+    trpc.authentication.signIn.useMutation({
+      onError: onErrorHandler,
       onSuccess: (data) => {
-        user.value = data;
+        setAuthentication(data, refetch);
       },
-    }
-  );
-  const { mutate: login } = trpc.authentication.signIn.useMutation({
-    onError: onErrorHandler,
-    onSuccess: (data) => {
-      setAuthentication(data, refetch);
-    },
-  });
-  const { mutate: register } = trpc.authentication.signUp.useMutation({
-    onError: onErrorHandler,
-    onSuccess: (data) => {
-      setAuthentication(data, refetch);
-    },
-  });
+    });
+  const { mutate: register, isLoading: signUpLoading } =
+    trpc.authentication.signUp.useMutation({
+      onError: onErrorHandler,
+      onSuccess: (data) => {
+        setAuthentication(data, refetch);
+      },
+    });
 
   const form = useForm({
     initialValues: {
@@ -98,12 +97,12 @@ export const Authentication = () => {
       withCloseButton={false}
       centered
     >
-      {isFetched && isLoading ? (
-        <Group position="center">
+      {isLoading ? (
+        <Group position="center" mih={300}>
           <Loader />
         </Group>
       ) : (
-        <Paper radius="md" p="xl" withBorder>
+        <Paper radius="md" p="xl">
           <Text size="lg" weight={500}>
             Welcome to Talk to AI
           </Text>
@@ -178,7 +177,11 @@ export const Authentication = () => {
                   ? "Already have an account? Login"
                   : "Don't have an account? Register"}
               </Anchor>
-              <Button type="submit" radius="xl">
+              <Button
+                type="submit"
+                radius="xl"
+                loading={signInLoading || signUpLoading}
+              >
                 {upperFirst(type)}
               </Button>
             </Group>

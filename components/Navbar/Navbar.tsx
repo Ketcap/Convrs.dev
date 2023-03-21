@@ -1,29 +1,19 @@
 import { Box, Stack, UnstyledButton } from "@mantine/core";
+import { useSignal } from "@preact/signals-react";
 import { trpc } from "../../lib/trpcClient";
 import { user } from "../../states/authentication";
 import { currentChatroom } from "../../states/chatrooms";
 import { navbarState } from "../../states/navbarState";
+import { NewChatroomModal } from "../NewChatroomModal/NewChatroomModal";
 import { ChatRoomItem } from "./ChatRoomItem";
 import { ProfileButton } from "./ProfileButton";
 
 export const Navbar = () => {
-  const [
-    { data: chatrooms, isLoading: isChatroomLoading },
-    { data: defaultRooms, isLoading: isDefaultRoomLoading },
-  ] = trpc.useQueries((t) => [
-    t.chatroom.getChatrooms(undefined, {
+  const isModalOpen = useSignal(false);
+  const { data: chatrooms = [], isLoading: isChatroomLoading } =
+    trpc.chatroom.getChatrooms.useQuery(undefined, {
       enabled: !!user.value?.id,
-
-      onSuccess: (data) => {
-        if (data.length > 0) {
-          currentChatroom.value = { id: data[data.length - 1].id };
-        }
-      },
-    }),
-    t.chatroom.getPredefinedRooms(undefined, {
-      enabled: !!user.value?.id,
-    }),
-  ]);
+    });
   return (
     <Box
       p="xs"
@@ -49,33 +39,27 @@ export const Navbar = () => {
           <UnstyledButton
             sx={{ ":hover": { background: "#f2f2f7" }, padding: 4 }}
             onClick={() => {
-              currentChatroom.value = undefined;
+              isModalOpen.value = true;
             }}
           >
             Start a new chat
           </UnstyledButton>
-          {chatrooms?.map(
-            ({ createdAt: _, directives: __, ...room }, index) => (
-              <ChatRoomItem {...room} key={index} />
-            )
-          )}
-        </Stack>
-        <Stack
-          bottom={0}
-          sx={{ display: "flex", flexDirection: "column", flex: 1 }}
-        >
-          {defaultRooms?.map((room, index) => (
-            <ChatRoomItem {...room} key={index} />
+          {chatrooms.map((room) => (
+            <ChatRoomItem chatroom={room} key={room.id} />
           ))}
-          {user.value && (
-            <ProfileButton
-              image="/ai-2.png"
-              email={user.value.email}
-              name={user.value.name}
-            />
-          )}
         </Stack>
+        {user.value && (
+          <ProfileButton
+            image="/ai-2.png"
+            email={user.value.email}
+            name={user.value.name}
+          />
+        )}
       </Stack>
+      <NewChatroomModal
+        opened={isModalOpen.value}
+        onClose={() => (isModalOpen.value = false)}
+      />
     </Box>
   );
 };

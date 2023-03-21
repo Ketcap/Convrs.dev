@@ -14,7 +14,8 @@ import { Application, ConfigType } from "@prisma/client";
 import { z } from "zod";
 import { trpc } from "../../../lib/trpcClient";
 import { onErrorHandler } from "../../../lib/trpcUtils";
-import { elevenLabsKey, voiceKey, voiceList } from "../../../states/elevenLabs";
+import { user } from "../../../states/authentication";
+import { elevenLabsKey, voiceList } from "../../../states/elevenLabs";
 
 export const ElevenLabs = () => {
   const { isLoading, mutateAsync } = trpc.user.config.useMutation({
@@ -24,7 +25,6 @@ export const ElevenLabs = () => {
   const form = useForm({
     initialValues: {
       key: elevenLabsKey.value ?? "",
-      voice: voiceKey.value ?? "",
     },
     validate: {
       key: (val) => {
@@ -48,26 +48,23 @@ export const ElevenLabs = () => {
         {
           onSuccess: (data) => {
             elevenLabsKey.value = data.key;
-          },
-        }
-      );
-    }
-    if (val.voice) {
-      mutateAsync(
-        {
-          application: Application.ElevenLabs,
-          key: val.voice,
-          configType: ConfigType.Voice,
-        },
-        {
-          onSuccess: (data) => {
-            voiceKey.value = data.key;
+            if (user.value) {
+              const filtered = (user.value?.Configs ?? []).filter(
+                (e) =>
+                  e.application !== Application.ElevenLabs &&
+                  e.key !== ConfigType.Key
+              );
+              user.value = {
+                ...user.value,
+                Configs: [...filtered, data],
+              };
+            }
           },
         }
       );
     }
   });
-
+  // e6ba3435fa47849c4f042023b11ab99d
   return (
     <Stack>
       <Accordion radius="md" variant="filled">
@@ -93,18 +90,6 @@ export const ElevenLabs = () => {
                   }
                   radius="md"
                   disabled={isLoading}
-                />
-                <Select
-                  value={form.values.voice}
-                  label="Voice you would like to use"
-                  placeholder="Pick one"
-                  onChange={(item) => {
-                    form.setFieldValue("voice", item!);
-                  }}
-                  data={(voiceList.value ?? []).map((e) => ({
-                    value: e.voice_id,
-                    label: e.name,
-                  }))}
                 />
                 <Button
                   variant={"default"}
