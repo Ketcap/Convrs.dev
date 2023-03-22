@@ -1,4 +1,5 @@
-import { Box, Container, MantineProvider } from "@mantine/core";
+import { Box, MantineProvider } from "@mantine/core";
+import { Analytics } from "@vercel/analytics/react";
 import { Notifications } from "@mantine/notifications";
 import { Header } from "@/components/Header";
 import { AppProps } from "next/app";
@@ -10,30 +11,33 @@ import { trpc } from "../lib/trpcClient";
 
 function App({ Component, pageProps, ...rest }: AppProps) {
   return (
-    <MantineProvider withGlobalStyles withNormalizeCSS>
-      <Notifications position="top-right" />
-      <Box w={"100%"} sx={{ display: "flex", flexDirection: "column" }} p={0}>
-        <Header />
-        <Box sx={{ display: "flex", flex: 1 }}>
-          <Box pos="relative" bg="#fff">
-            <Navbar />
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              flex: 1,
-              background: "#fff",
-              flexDirection: "column",
-            }}
-            pos="relative"
-            p="md"
-          >
-            <Component {...pageProps} />
+    <>
+      <MantineProvider withGlobalStyles withNormalizeCSS>
+        <Notifications position="top-right" />
+        <Box w={"100%"} sx={{ display: "flex", flexDirection: "column" }} p={0}>
+          <Header />
+          <Box sx={{ display: "flex", flex: 1 }}>
+            <Box pos="relative" bg="#fff">
+              <Navbar />
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                flex: 1,
+                background: "#fff",
+                flexDirection: "column",
+              }}
+              pos="relative"
+              p="md"
+            >
+              <Component {...pageProps} />
+            </Box>
           </Box>
         </Box>
-      </Box>
-      <Authentication />
-    </MantineProvider>
+        <Authentication />
+      </MantineProvider>
+      <Analytics />
+    </>
   );
 }
 
