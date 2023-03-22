@@ -27,7 +27,13 @@ export const Chat = () => {
         </Grid.Col>
       )}
       {chatState.value.map((chat, index) => (
-        <Grid.Col span={12} mb="md" key={index} p={0} ref={lastElement}>
+        <Grid.Col
+          span={12}
+          mb="md"
+          key={index}
+          p={0}
+          ref={index === chatState.value.length - 1 ? lastElement : undefined}
+        >
           <ChatItem {...chat} key={index} />
         </Grid.Col>
       ))}

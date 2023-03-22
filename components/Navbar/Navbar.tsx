@@ -50,7 +50,7 @@ export const Navbar = () => {
         </Stack>
         {user.value && (
           <ProfileButton
-            image="/ai-2.png"
+            image="/ai-7.png"
             email={user.value.email}
             name={user.value.name}
           />

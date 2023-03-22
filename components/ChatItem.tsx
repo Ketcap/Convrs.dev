@@ -9,6 +9,7 @@ import {
   Box,
 } from "@mantine/core";
 import { useSignal } from "@preact/signals-react";
+import { SenderType } from "@prisma/client";
 import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { currentChatroom } from "../states/chatrooms";
@@ -18,15 +19,14 @@ import { ChatGenerateVoice } from "./ChatGenerateVoice";
 
 export interface ChatItemProps extends ChatInput {}
 
-const ChatItemUser = ({ position }: { position: "left" | "right" }) => (
+const ChatItemUser = ({ role }: { role: SenderType }) => (
   <Grid.Col
     span={"content"}
     p={0}
-    pl={position !== "left" ? 8 : 0}
-    pr={position !== "right" ? 8 : 0}
+    pl={8}
     sx={{ justifyContent: "flex-end", display: "inline-flex" }}
   >
-    <AIAvatar src="/ai-3.png" />
+    <AIAvatar src={role === SenderType.User ? "/ai-7.png" : "/ai.png"} />
   </Grid.Col>
 );
 
@@ -57,7 +57,7 @@ export const ChatItem = (chatInput: ChatItemProps) => {
     <Paper pos="relative">
       <Grid align={"flex-end"} m={0}>
         <Grid.Col span={1}>
-          <ChatItemUser position="left" />
+          <ChatItemUser role={role} />
         </Grid.Col>
         <Grid.Col
           span={11}

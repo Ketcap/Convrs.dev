@@ -11,6 +11,7 @@ import {
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { Application } from "@prisma/client";
+import Link from "next/link";
 import { z } from "zod";
 import { trpc } from "../../../lib/trpcClient";
 import { onErrorHandler } from "../../../lib/trpcUtils";
@@ -67,6 +68,14 @@ export const OpenAI = () => {
             <Text>Open AI Configuration</Text>
           </Accordion.Control>
           <Accordion.Panel>
+            <Text size="sm">
+              {"If you don't know where to find your API key, please visit"}
+            </Text>
+            <Text size="sm">
+              <Link href="https://platform.openai.com/account/api-keys">
+                OpenAI Dashboard
+              </Link>
+            </Text>
             <form onSubmit={onSubmit}>
               <Group align="flex-end" position="apart">
                 <PasswordInput

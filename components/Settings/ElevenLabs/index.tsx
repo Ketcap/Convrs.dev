@@ -8,6 +8,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Application, ConfigType } from "@prisma/client";
+import Link from "next/link";
 import { z } from "zod";
 import { trpc } from "../../../lib/trpcClient";
 import { onErrorHandler } from "../../../lib/trpcUtils";
@@ -70,6 +71,15 @@ export const ElevenLabs = () => {
             <Text>ElevenLabs Configuration</Text>
           </Accordion.Control>
           <Accordion.Panel>
+            <Text size="sm">
+              {"If you don't know where to find your API key, please visit"}
+            </Text>
+            <Text size="sm">
+              <Link href="https://beta.elevenlabs.io/">
+                ElevenLabs Dashboard
+              </Link>
+            </Text>
+
             <form onSubmit={onSubmit}>
               <Group align="flex-end" position="apart">
                 <PasswordInput
