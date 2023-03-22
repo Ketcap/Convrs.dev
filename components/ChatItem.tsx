@@ -6,12 +6,15 @@ import {
   ActionIcon,
   Progress,
   Grid,
+  Box,
 } from "@mantine/core";
-import { useSignal, useSignalEffect } from "@preact/signals-react";
+import { useSignal } from "@preact/signals-react";
 import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
 import { useEffect } from "react";
+import { currentChatroom } from "../states/chatrooms";
 import { ChatInput } from "../states/chatState";
 import { AIAvatar } from "./AIAvatar";
+import { ChatGenerateVoice } from "./ChatGenerateVoice";
 
 export interface ChatItemProps extends ChatInput {}
 
@@ -27,7 +30,9 @@ const ChatItemUser = ({ position }: { position: "left" | "right" }) => (
   </Grid.Col>
 );
 
-export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
+export const ChatItem = (chatInput: ChatItemProps) => {
+  const { role, content, audio, markdown } = chatInput;
+  const isRoomVoiceAvailable = currentChatroom.value?.voice;
   const currentProgress = useSignal(0);
   const isPlaying = useSignal(false);
 
@@ -60,13 +65,18 @@ export const ChatItem = ({ role, content, audio, markdown }: ChatItemProps) => {
           sx={{ borderRadius: 4 }}
           pos="relative"
         >
+          {!isRoomVoiceAvailable && !audio && role === "Assistant" && (
+            <Box pos={"absolute"} right={16} bottom={16}>
+              <ChatGenerateVoice chatInput={chatInput} />
+            </Box>
+          )}
           {audio && (
             <Group position="apart">
               <>
                 <Progress
                   value={currentProgress.value}
                   pos="absolute"
-                  sx={{ left: 0, right: 0, bottom: 0, animation: "all 100ms" }}
+                  sx={{ left: 0, right: 0, bottom: 0, animation: "all 20ms" }}
                 />
                 <ActionIcon
                   pos={"absolute"}

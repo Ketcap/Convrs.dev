@@ -7,7 +7,7 @@ const createChatroomInput = z.object({
   name: z.string(),
   openAIModel: z.string(),
   directive: z.string(),
-  voice: z.string(),
+  voice: z.string().nullable(),
 })
 
 

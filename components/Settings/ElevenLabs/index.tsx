@@ -2,12 +2,9 @@ import {
   Accordion,
   Button,
   Group,
-  Input,
   PasswordInput,
-  Select,
   Stack,
   Text,
-  Tooltip,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { Application, ConfigType } from "@prisma/client";
@@ -15,7 +12,7 @@ import { z } from "zod";
 import { trpc } from "../../../lib/trpcClient";
 import { onErrorHandler } from "../../../lib/trpcUtils";
 import { user } from "../../../states/authentication";
-import { elevenLabsKey, voiceList } from "../../../states/elevenLabs";
+import { elevenLabsKey } from "../../../states/elevenLabs";
 
 export const ElevenLabs = () => {
   const { isLoading, mutateAsync } = trpc.user.config.useMutation({

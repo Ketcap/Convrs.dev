@@ -58,15 +58,18 @@ export const NewChatroomModal = ({
       },
     },
   });
-  const onSubmit = form.onSubmit((data) => {
-    createRoom(data);
-  });
 
-  const { data } = trpc.openAI.getModels.useQuery(undefined, {
+  const { data: modelData } = trpc.openAI.getModels.useQuery(undefined, {
     cacheTime: 1000 * 60 * 60 * 24,
     onSuccess: (data) => {
       form.setFieldValue("openAIModel", data[0]);
     },
+  });
+
+  const onSubmit = form.onSubmit((data) => {
+    form.reset();
+    if (modelData?.length) form.setFieldValue("openAIModel", modelData[0]);
+    createRoom(data);
   });
 
   return (
@@ -95,7 +98,7 @@ export const NewChatroomModal = ({
           onChange={(item) => {
             form.setFieldValue("openAIModel", item!);
           }}
-          data={(data ?? []).map((e) => ({
+          data={(modelData ?? []).map((e) => ({
             value: e,
             label: e,
           }))}

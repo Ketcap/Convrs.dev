@@ -17,7 +17,6 @@ import { onErrorHandler } from "../lib/trpcUtils";
 import {
   addChatInput,
   addVoiceToChatInput,
-  chatState,
   initializeChat,
 } from "../states/chatState";
 import { getVoiceOutput } from "../states/elevenLabs";
@@ -36,7 +35,7 @@ export default function Home() {
       {
         enabled: !!currentChatRoomId,
         onSuccess: async (data) => {
-          initializeChat(data);
+          await initializeChat(data);
         },
       }
     );
