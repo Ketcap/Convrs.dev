@@ -8,9 +8,10 @@ import {
   Grid,
   Box,
 } from "@mantine/core";
+import { useClipboard } from "@mantine/hooks";
 import { useSignal } from "@preact/signals-react";
 import { SenderType } from "@prisma/client";
-import { IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
+import { IconCopy, IconPlayerPlay, IconPlayerStop } from "@tabler/icons-react";
 import { useEffect } from "react";
 import { currentChatroom } from "../states/chatrooms";
 import { ChatInput } from "../states/chatState";
@@ -31,6 +32,7 @@ const ChatItemUser = ({ role }: { role: SenderType }) => (
 );
 
 export const ChatItem = (chatInput: ChatItemProps) => {
+  const clipboard = useClipboard();
   const { role, content, audio, markdown } = chatInput;
   const isRoomVoiceAvailable = currentChatroom.value?.voice;
   const currentProgress = useSignal(0);
@@ -65,51 +67,50 @@ export const ChatItem = (chatInput: ChatItemProps) => {
           sx={{ borderRadius: 4 }}
           pos="relative"
         >
-          {!isRoomVoiceAvailable && !audio && role === "Assistant" && (
-            <Box pos={"absolute"} right={16} bottom={16}>
-              <ChatGenerateVoice chatInput={chatInput} />
-            </Box>
-          )}
-          {audio && (
-            <Group position="apart">
-              <>
-                <Progress
-                  value={currentProgress.value}
-                  pos="absolute"
-                  sx={{ left: 0, right: 0, bottom: 0, animation: "all 20ms" }}
-                />
-                <ActionIcon
-                  pos={"absolute"}
-                  right={16}
-                  bottom={16}
-                  onClick={() => {
-                    const isPlayAction = isPlaying.value;
-
-                    if (!isPlayAction) {
-                      audio.currentTime = 0;
-
-                      audio.play().catch(console.log);
-                    }
-                    if (isPlayAction) {
-                      audio.pause();
-                    }
-                    isPlaying.value = !isPlaying.value;
-                  }}
-                >
-                  {isPlaying.value ? <IconPlayerStop /> : <IconPlayerPlay />}
-                </ActionIcon>
-              </>
-            </Group>
-          )}
-
           <TypographyStylesProvider>
-            <Text>
-              <div
-                dangerouslySetInnerHTML={{ __html: markdown ?? content }}
-                style={{ whiteSpace: "pre-wrap" }}
-              />
-            </Text>
+            <div dangerouslySetInnerHTML={{ __html: markdown ?? content }} />
           </TypographyStylesProvider>
+
+          {/* Bottom Action Items */}
+          <Group position="right">
+            <ActionIcon onClick={() => clipboard.copy(content)}>
+              <IconCopy />
+            </ActionIcon>
+            {!isRoomVoiceAvailable && !audio && role === "Assistant" && (
+              <ChatGenerateVoice chatInput={chatInput} />
+            )}
+            {audio && (
+              <Group position="apart">
+                <>
+                  <Progress
+                    value={currentProgress.value}
+                    pos="absolute"
+                    sx={{ left: 0, right: 0, bottom: 0, animation: "all 20ms" }}
+                  />
+                  <ActionIcon
+                    pos={"absolute"}
+                    right={16}
+                    bottom={16}
+                    onClick={() => {
+                      const isPlayAction = isPlaying.value;
+
+                      if (!isPlayAction) {
+                        audio.currentTime = 0;
+
+                        audio.play().catch(console.log);
+                      }
+                      if (isPlayAction) {
+                        audio.pause();
+                      }
+                      isPlaying.value = !isPlaying.value;
+                    }}
+                  >
+                    {isPlaying.value ? <IconPlayerStop /> : <IconPlayerPlay />}
+                  </ActionIcon>
+                </>
+              </Group>
+            )}
+          </Group>
         </Grid.Col>
       </Grid>
     </Paper>
