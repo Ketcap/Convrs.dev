@@ -1,38 +1,49 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Talking to AI
 
-## Getting Started
+This project is created to have combination of multiple tools and how to combine them to reach the full power of all these API integrations and AI.
 
-First, run the development server:
+---
+
+## How to run Locally?
+
+To run locally copy `.env.example` to an empty `.env` file and replace the variables there.
+
+| Key                    | Description                                                 |
+| ---------------------- | ----------------------------------------------------------- |
+| `DATABASE_URL`         | should refer postgresql database it can be local db.        |
+| `SUPABASE_URL`         | supabase project url                                        |
+| `SUPABASE_SERVICE_KEY` | supebase service key. (not: anon key that is used publicly) |
+
+### 1. Install Packages
+
+Run following commands at the first time running of the project.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+
+npm install // to install packages locally
+
+npm run db:migrate:dev // to make sure database structure is aligned with prisma.schema
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Application by default will work on `localhost:3000` then you need to signup yourself locally.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+#### Database
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+If you are not sure how to setup database follow these steps:
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+- Download Docker Desktop on your machine
+- Run `npm run db:local`, this will install postgresql and start database locally.
+  - You can replace `DATABASE_URL` to `postgres://prisma:password@localhost:5432/talktoai?schema=public`
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### 2. Running Application
 
-## Learn More
+To run application after setup up the application with the steps above, use commands below
 
-To learn more about Next.js, take a look at the following resources:
+```bash
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+npm run dev // make sure to replace .env variables before running.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+---
