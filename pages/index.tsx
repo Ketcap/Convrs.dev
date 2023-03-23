@@ -149,6 +149,12 @@ export default function Home() {
             sx={{ display: "flex", flex: 1 }}
             wrapperProps={{ sx: { flex: 1 } }}
             disabled={isChatroomLoading || isThinking || !currentChatRoomId}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onSend();
+              }
+            }}
           />
           <ActionIcon disabled={!currentChatRoomId}>
             <IconSend onClick={onSend} />
