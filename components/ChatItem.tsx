@@ -72,7 +72,7 @@ export const ChatItem = (chatInput: ChatItemProps) => {
           </TypographyStylesProvider>
 
           {/* Bottom Action Items */}
-          <Group position="right">
+          <Group position="right" spacing="xs">
             <ActionIcon onClick={() => clipboard.copy(content)}>
               <IconCopy />
             </ActionIcon>
@@ -88,9 +88,6 @@ export const ChatItem = (chatInput: ChatItemProps) => {
                     sx={{ left: 0, right: 0, bottom: 0, animation: "all 20ms" }}
                   />
                   <ActionIcon
-                    pos={"absolute"}
-                    right={16}
-                    bottom={16}
                     onClick={() => {
                       const isPlayAction = isPlaying.value;
 
