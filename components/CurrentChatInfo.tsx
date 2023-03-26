@@ -1,7 +1,19 @@
-import { ActionIcon, Drawer, Modal, Stack, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Drawer,
+  Text,
+  Paper,
+  ScrollArea,
+  Stack,
+  TypographyStylesProvider,
+  Title,
+  Divider,
+} from "@mantine/core";
 import { useSignal } from "@preact/signals-react";
+import { SenderType } from "@prisma/client";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { currentChatroom } from "../states/chatrooms";
+import { chatState } from "../states/chatState";
 import { findVoice } from "../states/elevenLabs";
 
 export const CurrentChatInfo = () => {
@@ -9,6 +21,7 @@ export const CurrentChatInfo = () => {
 
   if (!currentChatroom.value?.id) return null;
 
+  const favoritesList = chatState.value.filter((chat) => chat.isFavorite);
   return (
     <>
       <ActionIcon onClick={() => (isInfoOpen.value = true)}>
@@ -47,6 +60,28 @@ export const CurrentChatInfo = () => {
                 }).format(currentChatroom.value.createdAt)}
               </b>
             </Text>
+            <ScrollArea>
+              <Title order={4}>Favorite Messages</Title>
+              <Divider my="md" />
+
+              {favoritesList.map(({ id, markdown, content, senderType }) => (
+                <>
+                  <Paper p={0} key={id}>
+                    <Text>
+                      {senderType === SenderType.System ? "AI" : "You"}
+                    </Text>
+                    <TypographyStylesProvider>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: markdown ?? content,
+                        }}
+                      />
+                    </TypographyStylesProvider>
+                  </Paper>
+                  <Divider my="sm" variant="dotted" />
+                </>
+              ))}
+            </ScrollArea>
           </Stack>
         )}
       </Drawer>
