@@ -5,7 +5,7 @@ import { privateProcedure, router } from "@/lib/trpc";
 
 const createChatroomInput = z.object({
   name: z.string(),
-  openAIModel: z.string(),
+  openAIModel: z.string().default('gpt-3.5-turbo'),
   directive: z.string(),
   voice: z.string().nullable(),
 })
