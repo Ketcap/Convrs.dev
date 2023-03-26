@@ -56,12 +56,7 @@ export default function Home() {
             }
           });
         }
-        addChatInput({
-          content: data.content,
-          role: data.senderType,
-          id: data.id,
-          timestamp: data.createdAt,
-        });
+        addChatInput(data);
       },
     });
 
@@ -74,12 +69,7 @@ export default function Home() {
           chatroomId: data.chatroomId,
           content: data.content,
         });
-        addChatInput({
-          content: data.content,
-          role: data.senderType,
-          id: data.id,
-          timestamp: data.createdAt,
-        });
+        addChatInput(data);
       },
     });
   const onSend = () => {

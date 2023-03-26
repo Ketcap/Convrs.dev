@@ -1,4 +1,4 @@
-import { ActionIcon, Modal, Stack, Text } from "@mantine/core";
+import { ActionIcon, Drawer, Modal, Stack, Text } from "@mantine/core";
 import { useSignal } from "@preact/signals-react";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { currentChatroom } from "../states/chatrooms";
@@ -14,10 +14,11 @@ export const CurrentChatInfo = () => {
       <ActionIcon onClick={() => (isInfoOpen.value = true)}>
         <IconInfoCircle />
       </ActionIcon>
-      <Modal
+      <Drawer
         opened={isInfoOpen.value}
         onClose={() => (isInfoOpen.value = false)}
         title="Chatroom Info"
+        position="right"
       >
         {currentChatroom.value && (
           <Stack>
@@ -48,7 +49,7 @@ export const CurrentChatInfo = () => {
             </Text>
           </Stack>
         )}
-      </Modal>
+      </Drawer>
     </>
   );
 };

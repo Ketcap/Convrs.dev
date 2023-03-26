@@ -19,13 +19,13 @@ export const addMessageAsStream = async (data: ReadableStream<any>) => {
     text += chunkValue;
 
     if (isFirst) {
-      isFirst = false;
-      addChatInput({
-        content: chunkValue,
-        role: 'assistant' as SenderType,
-        id: id,
-        timestamp: new Date(),
-      });
+      // isFirst = false;
+      // addChatInput({
+      //   senderType: 'assistant' as SenderType,
+      //   content: chunkValue,
+      //   id: id,
+      //   createdAt: new Date(),
+      // });
     } else {
       editChatInput(id, text);
     }

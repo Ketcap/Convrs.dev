@@ -9,5 +9,6 @@ export const user = signal<{
   Configs: Config[]
 } | null>(null)
 
+// @ts-ignore , editor does not throw error but it does not work
 export const token = signal(nookies.get(null, 'token')?.token || undefined);
 export const refreshToken = signal(nookies.get(null, 'refreshToken')?.refreshToken || undefined);
