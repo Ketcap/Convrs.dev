@@ -3,13 +3,9 @@ import { renderMarkdown } from "../lib/renderMarkdown";
 import { Message, SenderType } from "@prisma/client";
 import { currentChatroom } from "./chatrooms";
 
-export interface ChatInput {
-  id: string;
-  role: SenderType;
-  content: string;
+export interface ChatInput extends Message {
   audio?: HTMLAudioElement;
   markdown?: string;
-  timestamp?: Date;
 }
 
 export const chatState = signal<ChatInput[]>([]);
@@ -70,10 +66,7 @@ export const addVoiceToChatInput = (id: string, voice: ArrayBuffer) => {
 export const initializeChat = async (messages: Message[]) => {
   chatState.value = await Promise.all(messages.map(message => {
     return addChatInput({
-      id: message.id,
-      role: message.senderType,
-      content: message.content,
-      timestamp: message.createdAt,
+      ...message,
       audio: message.Voice ? createAudio(message.Voice) : undefined
     })
   })

@@ -58,9 +58,13 @@ const sendMessageToChatroomInput = z.object({
   content: z.string(),
 })
 
+const starMessageInput = z.object({
+  messageId: z.string(),
+  isFavorite: z.boolean()
+})
+
 
 export const messageRouter = router({
-
   getChatroomMessages: privateProcedure
     .input(getChatroomMessagesInput)
     .query(async ({ ctx, input }) => {
@@ -119,4 +123,18 @@ export const messageRouter = router({
         }
       })
     })
+  ,
+  starMessage: privateProcedure
+    .input(starMessageInput)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.message.update({
+        where: {
+          id: input.messageId,
+        },
+        data: {
+          isFavorite: input.isFavorite
+        }
+      })
+    }
+    )
 });

@@ -53,6 +53,8 @@ model Message {
   senderType SenderType
   createdAt  DateTime   @default(now())
 
+  isFavorite Boolean @default(false)
+
   Voice Bytes?
 
   // Fetching messages by chatroom and createdAt
