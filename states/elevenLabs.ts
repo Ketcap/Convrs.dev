@@ -3,6 +3,7 @@ import { effect, signal } from "@preact/signals-react";
 import { Application, ConfigType } from "@prisma/client";
 import { trpc } from "../lib/trpcClient";
 import { user } from "./authentication";
+import { currentChatroom } from "./chatrooms";
 
 const elevenLabsUrl = 'https://api.elevenlabs.io/v1'
 
@@ -60,6 +61,11 @@ export const getVoiceOutput = async ({
 }) => {
   const elevenLabsKeyVal = elevenLabsKey.peek();
   if (!elevenLabsKeyVal) return;
+  const {
+    voiceClarity = 0.65,
+    voiceStability = 0.60
+  } = currentChatroom.peek() || {}
+  console.log(voiceClarity, voiceStability)
   const responseVoice = await fetch(`${elevenLabsUrl}/text-to-speech/${voiceKey}`, {
     method: 'POST',
     headers: {
@@ -70,8 +76,8 @@ export const getVoiceOutput = async ({
     body: JSON.stringify({
       "text": output,
       "voice_settings": {
-        "stability": 0.60,
-        "similarity_boost": 0.65
+        "stability": Number(voiceStability),
+        "similarity_boost": Number(voiceClarity)
       }
     })
   }).then(res => res.arrayBuffer())

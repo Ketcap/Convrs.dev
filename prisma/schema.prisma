@@ -27,10 +27,12 @@ model User {
 model Chatroom {
   id String @id @default(cuid())
 
-  name      String // Optional name for the chatroom
-  model     String // OpenAI model used for the chatroom
-  voice     String? // Voice used for the chatroom
-  directive String?
+  name           String // Optional name for the chatroom
+  model          String // OpenAI model used for the chatroom
+  directive      String? // System directive for OpenAI
+  voice          String? // Voice used for the chatroom
+  voiceStability Decimal?
+  voiceClarity   Decimal?
 
   userId String // The user who created the chatroom
   User   User   @relation(fields: [userId], references: [id])

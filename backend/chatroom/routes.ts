@@ -8,6 +8,8 @@ const createChatroomInput = z.object({
   openAIModel: z.string().default('gpt-3.5-turbo'),
   directive: z.string(),
   voice: z.string().nullable(),
+  voiceStability: z.number().min(0).max(1).default(0.60).nullable(),
+  voiceClarity: z.number().min(0).max(1).default(0.65).nullable(),
 })
 
 
@@ -23,6 +25,8 @@ export const chatroomRouter = router({
           voice: input.voice,
           directive: input.directive,
           model: input.openAIModel,
+          voiceStability: input.voiceStability,
+          voiceClarity: input.voiceClarity,
         }
       })
     }),

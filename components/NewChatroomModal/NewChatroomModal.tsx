@@ -8,8 +8,12 @@ import {
   Group,
   Button,
   Textarea,
+  Slider,
+  Space,
+  Stack,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useSignal } from "@preact/signals-react";
 import { z } from "zod";
 import { trpc } from "../../lib/trpcClient";
 import { onErrorHandler } from "../../lib/trpcUtils";
@@ -23,6 +27,8 @@ export const NewChatroomModal = ({
   onClose,
 }: NewChatroomModalProps) => {
   const util = trpc.useContext();
+  const stability = useSignal(0.6);
+  const clarity = useSignal(0.65);
   const { mutate: createRoom, isLoading } = trpc.chatroom.create.useMutation({
     onError: onErrorHandler,
     onSuccess: (data) => {
@@ -69,7 +75,12 @@ export const NewChatroomModal = ({
   const onSubmit = form.onSubmit((data) => {
     form.reset();
     if (modelData?.length) form.setFieldValue("openAIModel", modelData[0]);
-    createRoom(data);
+
+    createRoom({
+      ...data,
+      voiceClarity: clarity.value,
+      voiceStability: stability.value,
+    });
   });
 
   return (
@@ -131,6 +142,58 @@ export const NewChatroomModal = ({
             label: e.name,
           }))}
         />
+        <Stack p="lg">
+          <Text size="sm" weight={500}>
+            Stability
+          </Text>
+          <Slider
+            value={stability.value}
+            onChange={(value) => {
+              stability.value = value;
+            }}
+            min={0}
+            step={0.01}
+            max={1}
+            scale={(val) => Number(val.toFixed(2))}
+            marks={[
+              {
+                value: 0,
+                label: "0%",
+              },
+              { value: 0.5, label: "50%" },
+              {
+                value: 1,
+                label: "100%",
+              },
+            ]}
+          />
+          <Space h="md" />
+          <Text size="sm" weight={500}>
+            Clarity + Similarity Enhancement
+          </Text>
+          <Slider
+            value={clarity.value}
+            min={0}
+            step={0.01}
+            max={1}
+            scale={(val) => Number(val.toFixed(2))}
+            onChange={(value) => {
+              clarity.value = value;
+            }}
+            marks={[
+              {
+                value: 0,
+                label: "0%",
+              },
+              { value: 0.5, label: "50%" },
+              {
+                value: 1,
+                label: "100%",
+              },
+            ]}
+          />
+        </Stack>
+
         <Group mt="lg" position="right">
           <Button type="submit" loading={isLoading} disabled={isLoading}>
             Create Chat
