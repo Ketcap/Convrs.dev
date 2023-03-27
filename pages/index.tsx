@@ -10,7 +10,7 @@ import { RecordButton } from "../components/RecordButton";
 import { startRecording, stopRecording } from "../states/audioState";
 import { Chat } from "../components/Chat";
 import { IconExclamationMark, IconSend } from "@tabler/icons-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { currentChatroom } from "../states/chatrooms";
 import { trpc } from "../lib/trpcClient";
 import { onErrorHandler } from "../lib/trpcUtils";
@@ -72,6 +72,13 @@ export default function Home() {
         addChatInput(data);
       },
     });
+
+  const isApplicationAvailable = !(
+    isChatroomLoading ||
+    isThinking ||
+    !currentChatRoomId
+  );
+
   const onSend = () => {
     const val = ref.current!.value;
     if (!val || !currentChatRoomId) return;
@@ -100,6 +107,12 @@ export default function Home() {
     });
     ref.current!.value = "";
   };
+
+  useEffect(() => {
+    if (isApplicationAvailable) {
+      ref.current?.focus();
+    }
+  }, [isApplicationAvailable]);
 
   return (
     <>
@@ -138,7 +151,7 @@ export default function Home() {
             placeholder="If you have any input that you have copied from somewhere, paste it here then follow up with the recording button to talk about it."
             sx={{ display: "flex", flex: 1 }}
             wrapperProps={{ sx: { flex: 1 } }}
-            disabled={isChatroomLoading || isThinking || !currentChatRoomId}
+            disabled={!isApplicationAvailable}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -150,7 +163,7 @@ export default function Home() {
             <IconSend onClick={onSend} />
           </ActionIcon>
           <RecordButton
-            disabled={isChatroomLoading || isThinking || !currentChatRoomId}
+            disabled={!isApplicationAvailable}
             onClick={async (state) =>
               state ? startRecording(onVoiceSend) : stopRecording()
             }
