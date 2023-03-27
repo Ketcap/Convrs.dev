@@ -113,7 +113,7 @@ export const ChatItem = (chatInput: ChatItemProps) => {
             <ActionIcon onClick={() => clipboard.copy(content)}>
               <IconCopy />
             </ActionIcon>
-            {!isRoomVoiceAvailable && !audio && senderType === "Assistant" && (
+            {!isRoomVoiceAvailable && !audio && (
               <ChatGenerateVoice chatInput={chatInput} />
             )}
             {audio && (
