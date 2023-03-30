@@ -26,8 +26,7 @@ import { setAuthentication } from "../lib/authentication";
 
 export const Authentication = () => {
   const [type, toggle] = useToggle(["login", "register"] as const);
-  const { data, isLoading, refetch } = trpc.user.me.useQuery(undefined, {
-    cacheTime: 0,
+  const { isLoading, refetch } = trpc.user.me.useQuery(undefined, {
     onSuccess: (data) => {
       user.value = data;
     },

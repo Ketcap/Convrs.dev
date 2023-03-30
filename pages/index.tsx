@@ -18,7 +18,6 @@ import { onErrorHandler } from "../lib/trpcUtils";
 import {
   addChatInput,
   addVoiceToChatInput,
-  addMarkdownToChatInput,
   initializeChat,
   removeChatInput,
   editChatInput,
@@ -47,7 +46,6 @@ export default function Home() {
     );
   const { isLoading: isThinking, mutateAsync: getAnswer } =
     trpc.openAI.getCompletion.useMutation({
-      cacheTime: 0,
       onError: onErrorHandler,
       onSuccess: async (data) => {
         if (voice) {

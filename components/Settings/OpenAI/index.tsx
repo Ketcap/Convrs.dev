@@ -2,11 +2,9 @@ import {
   Accordion,
   Button,
   Group,
-  Input,
   PasswordInput,
   Stack,
   Text,
-  Tooltip,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
@@ -19,7 +17,6 @@ import { user } from "../../../states/authentication";
 
 export const OpenAI = () => {
   const { refetch } = trpc.openAI.getModels.useQuery(undefined, {
-    enabled: false,
     onError: () => {
       notifications.show({
         title: "OpenAI cannot be loaded",
@@ -28,9 +25,10 @@ export const OpenAI = () => {
       });
     },
   });
-  const { data, isLoading, mutateAsync } = trpc.user.config.useMutation({
+
+  const { isLoading, mutateAsync } = trpc.user.config.useMutation({
     onError: onErrorHandler,
-    onSuccess: async () => {
+    onSuccess: () => {
       refetch();
     },
   });
@@ -40,7 +38,6 @@ export const OpenAI = () => {
   const form = useForm({
     initialValues: {
       key: openAIConfig?.key ?? "",
-      // model: "", // to be added
     },
     validate: {
       key: (val) => {
