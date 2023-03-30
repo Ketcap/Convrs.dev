@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { privateProcedure, router } from "@/lib/trpc";
+import { privateProcedure, publicProcedure, router } from "@/lib/trpc";
 import { Application, ConfigType } from "@prisma/client";
 
 

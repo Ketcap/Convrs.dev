@@ -21,6 +21,7 @@ import { useSignal } from "@preact/signals-react";
 import { z } from "zod";
 import { trpc } from "../../lib/trpcClient";
 import { onErrorHandler } from "../../lib/trpcUtils";
+import { user } from "../../states/authentication";
 import { currentChatroom } from "../../states/chatrooms";
 import { voiceList } from "../../states/elevenLabs";
 
@@ -73,6 +74,7 @@ export const NewChatroomModal = ({
 
   const { data: modelData, isLoading: isModelLoading } =
     trpc.openAI.getModels.useQuery(undefined, {
+      enabled: !!user.value,
       onError: () => {
         notifications.show({
           title: "OpenAI cannot be loaded",

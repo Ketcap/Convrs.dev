@@ -17,6 +17,7 @@ import { user } from "../../../states/authentication";
 
 export const OpenAI = () => {
   const { refetch } = trpc.openAI.getModels.useQuery(undefined, {
+    enabled: false,
     onError: () => {
       notifications.show({
         title: "OpenAI cannot be loaded",

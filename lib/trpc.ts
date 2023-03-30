@@ -1,4 +1,4 @@
-import { initTRPC } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { Context, createContext } from './context';
 import { extendSuperjson } from './extendSuperjson';
@@ -18,7 +18,7 @@ const isAuth = t.middleware(async ({ next, ctx }) => {
   const token = ctx.req.headers.authorization;
   const refreshToken = ctx.req.headers.refreshToken;
   try {
-    const { data, error } = await ctx.supabase.auth.getUser(token);
+    const { data } = await ctx.supabase.auth.getUser(token);
     if (!data?.user) throw new Error('Not Authenticated');
     const user = await ctx.prisma.user.findUniqueOrThrow({
       where: {
@@ -37,8 +37,7 @@ const isAuth = t.middleware(async ({ next, ctx }) => {
     });
   }
   catch (e) {
-    console.error(e)
-    throw new Error('Not Authenticated');
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Not Authenticated' })
   }
 });
 
