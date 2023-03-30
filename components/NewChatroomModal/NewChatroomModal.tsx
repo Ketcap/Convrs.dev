@@ -56,7 +56,7 @@ export const NewChatroomModal = ({
       openAIModel: "",
       directive: "",
       voice: "",
-      maxTokens: 250,
+      maxToken: 250,
     },
     validate: {
       name: (val) => {
@@ -73,7 +73,7 @@ export const NewChatroomModal = ({
           return "Select model to for Open AI";
         }
       },
-      maxTokens: (val) => {
+      maxToken: (val) => {
         try {
           z.number().min(1).parse(val);
         } catch (err) {
@@ -152,15 +152,15 @@ export const NewChatroomModal = ({
             error={form.errors.openAIModel && "Select model to for Open AI"}
           />
           <NumberInput
-            value={form.values.maxTokens}
+            value={form.values.maxToken}
             placeholder="250"
             label="Max Tokens to be used"
             onChange={(item) => {
-              form.setFieldValue("maxTokens", item === "" ? 0 : item);
+              form.setFieldValue("maxToken", item === "" ? 0 : item);
             }}
             withAsterisk
             mb="sm"
-            error={form.errors.maxTokens}
+            error={form.errors.maxToken}
           />
           <Textarea
             required
