@@ -27,7 +27,24 @@ export const addChatInput = async (input: ChatInput) => {
   return chatInput;
 }
 
-export const editChatInput = async (id: string, content: string) => {
+export const removeChatInput = (id: string) => {
+  chatState.value = chatState.value.filter((chat) => chat.id !== id);
+}
+
+// !TODO: make sure if content is edited, markdown needs to be updated
+export const editChatInput = (id: string, input: Partial<ChatInput>) => {
+  chatState.value = chatState.value.map((chat) => {
+    if (chat.id === id) {
+      return {
+        ...chat,
+        ...input
+      }
+    }
+    return chat
+  });
+}
+
+export const addMarkdownToChatInput = async (id: string, content: string) => {
   const markdown = await renderMarkdown(content);
   chatState.value = chatState.value.map((chat) => {
     if (chat.id === id) {

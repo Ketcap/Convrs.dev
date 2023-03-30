@@ -1,6 +1,6 @@
 import { createId } from "@paralleldrive/cuid2";
 import type { SenderType } from "@prisma/client";
-import { addChatInput, editChatInput } from "../states/chatState";
+import { addChatInput, addMarkdownToChatInput } from "../states/chatState";
 
 // this should be added after response
 export const addMessageAsStream = async (data: ReadableStream<any>) => {
@@ -27,7 +27,7 @@ export const addMessageAsStream = async (data: ReadableStream<any>) => {
       //   createdAt: new Date(),
       // });
     } else {
-      editChatInput(id, text);
+      addMarkdownToChatInput(id, text);
     }
   }
 }

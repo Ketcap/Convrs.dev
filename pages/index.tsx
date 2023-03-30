@@ -11,16 +11,22 @@ import { startRecording, stopRecording } from "../states/audioState";
 import { Chat } from "../components/Chat";
 import { IconExclamationMark, IconSend } from "@tabler/icons-react";
 import { useEffect, useRef } from "react";
+import { createId } from "@paralleldrive/cuid2";
 import { currentChatroom } from "../states/chatrooms";
 import { trpc } from "../lib/trpcClient";
 import { onErrorHandler } from "../lib/trpcUtils";
 import {
   addChatInput,
   addVoiceToChatInput,
+  addMarkdownToChatInput,
   initializeChat,
+  removeChatInput,
+  editChatInput,
 } from "../states/chatState";
 import { getVoiceOutput } from "../states/elevenLabs";
 import { notifications } from "@mantine/notifications";
+import { SenderType } from "@prisma/client";
+import { user } from "../states/authentication";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
@@ -61,17 +67,7 @@ export default function Home() {
     });
 
   const { mutateAsync: sendMessage } =
-    trpc.message.sendMessageToChatroom.useMutation({
-      cacheTime: 0,
-      onError: onErrorHandler,
-      onSuccess: async (data) => {
-        getAnswer({
-          chatroomId: data.chatroomId,
-          content: data.content,
-        });
-        addChatInput(data);
-      },
-    });
+    trpc.message.sendMessageToChatroom.useMutation();
 
   const isApplicationAvailable = !(
     isChatroomLoading ||
@@ -82,10 +78,38 @@ export default function Home() {
   const onSend = () => {
     const val = ref.current!.value;
     if (!val || !currentChatRoomId) return;
-    sendMessage({
+    const randomId = createId();
+    // optimistic update
+    addChatInput({
+      id: randomId,
       content: val,
       chatroomId: currentChatRoomId,
+      createdAt: new Date(),
+      isFavorite: false,
+      senderType: SenderType.User,
+      userId: `${user.peek()?.id}`,
+      Voice: null,
     });
+    sendMessage(
+      {
+        content: val,
+        chatroomId: currentChatRoomId,
+      },
+      {
+        onSuccess: async (data) => {
+          // correct the update with the correct id and other information
+          editChatInput(randomId, data);
+          getAnswer({
+            chatroomId: data.chatroomId,
+            content: data.content,
+          });
+        },
+        onError: (err) => {
+          onErrorHandler(err);
+          removeChatInput(randomId);
+        },
+      }
+    );
     ref.current!.value = "";
   };
 
