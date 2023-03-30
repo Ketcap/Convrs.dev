@@ -32,6 +32,7 @@ model Chatroom {
 
   name           String // Optional name for the chatroom
   model          String // OpenAI model used for the chatroom
+  maxToken       Int      @default(250) // Max token for the chatroom
   directive      String? // System directive for OpenAI
   voice          String? // Voice used for the chatroom
   voiceStability Decimal?

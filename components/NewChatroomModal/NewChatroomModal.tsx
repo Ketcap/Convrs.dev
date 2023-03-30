@@ -14,6 +14,7 @@ import {
   Switch,
   Box,
   LoadingOverlay,
+  NumberInput,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
@@ -55,20 +56,28 @@ export const NewChatroomModal = ({
       openAIModel: "",
       directive: "",
       voice: "",
+      maxTokens: 250,
     },
     validate: {
       name: (val) => {
         try {
           z.string().parse(val);
         } catch (err) {
-          return (err as Error).message;
+          return "Set Room Name";
         }
       },
       openAIModel: (val) => {
         try {
           z.string().min(0).parse(val);
         } catch (err) {
-          return (err as Error).message;
+          return "Select model to for Open AI";
+        }
+      },
+      maxTokens: (val) => {
+        try {
+          z.number().min(1).parse(val);
+        } catch (err) {
+          return "Max tokens must be greater than 0";
         }
       },
     },
@@ -115,7 +124,7 @@ export const NewChatroomModal = ({
           onChange={(event) =>
             form.setFieldValue("name", event.currentTarget.value)
           }
-          error={form.errors.email && "Set Room Name"}
+          error={form.errors.name && "Set Room Name"}
           radius="md"
         />
         <Space mt="xl" />
@@ -140,7 +149,18 @@ export const NewChatroomModal = ({
               label: e,
             }))}
             mb="sm"
-            error={form.errors.email && "Select model to for Open AI"}
+            error={form.errors.openAIModel && "Select model to for Open AI"}
+          />
+          <NumberInput
+            value={form.values.maxTokens}
+            placeholder="250"
+            label="Max Tokens to be used"
+            onChange={(item) => {
+              form.setFieldValue("maxTokens", item === "" ? 0 : item);
+            }}
+            withAsterisk
+            mb="sm"
+            error={form.errors.maxTokens}
           />
           <Textarea
             required
@@ -152,7 +172,7 @@ export const NewChatroomModal = ({
               form.setFieldValue("directive", event.currentTarget.value)
             }
             radius="md"
-            error={form.errors.email && "Set directive for the room"}
+            error={form.errors.directive && "Set directive for the room"}
           />
           <LoadingOverlay visible={isModelLoading} />
         </Box>

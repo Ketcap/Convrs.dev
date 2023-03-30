@@ -41,6 +41,9 @@ export const CurrentChatInfo = () => {
             <Text>
               Model: <b>{currentChatroom.value.model}</b>
             </Text>
+            <Text>
+              Max Tokens: <b>{currentChatroom.value.maxToken}</b>
+            </Text>
             {currentChatroom.value.voice && (
               <Text>
                 Voice: <b>{findVoice(currentChatroom.value.voice) ?? ""}</b>

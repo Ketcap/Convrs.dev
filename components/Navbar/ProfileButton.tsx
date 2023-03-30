@@ -5,6 +5,7 @@ import {
   Avatar,
   Text,
   createStyles,
+  Box,
 } from "@mantine/core";
 import { IconChevronRight } from "@tabler/icons-react";
 import { Settings } from "../Settings";
@@ -50,10 +51,11 @@ export function ProfileButton({
             <Text size="sm" weight={500}>
               {name}
             </Text>
-
-            <Text color="dimmed" size="xs">
-              {email}
-            </Text>
+            <Box w={100}>
+              <Text color="dimmed" size="xs" truncate={true}>
+                {email}
+              </Text>
+            </Box>
           </div>
 
           <IconChevronRight size="0.9rem" stroke={1.5} />

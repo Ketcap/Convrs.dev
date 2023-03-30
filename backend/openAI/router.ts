@@ -68,7 +68,7 @@ export const openAIRouter = router({
           }],
           model: chatroom.model,
           temperature: 0.2,
-          max_tokens: 250,
+          max_tokens: chatroom.maxTokens,
         })
 
         if (completion.data.choices.length === 0) {

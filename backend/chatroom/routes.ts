@@ -5,7 +5,8 @@ import { privateProcedure, router } from "@/lib/trpc";
 
 const createChatroomInput = z.object({
   name: z.string(),
-  openAIModel: z.string().default('gpt-3.5-turbo'),
+  openAIModel: z.string().nonempty().default('gpt-3.5-turbo'),
+  maxTokens: z.number().min(1),
   directive: z.string(),
   voice: z.string().nullable(),
   voiceStability: z.number().min(0).max(1).default(0.60).nullable(),
@@ -23,9 +24,10 @@ export const chatroomRouter = router({
         data: {
           name: input.name,
           userId: ctx.user.id,
-          voice: input.voice,
-          directive: input.directive,
           model: input.openAIModel,
+          maxToken: input.maxTokens,
+          directive: input.directive,
+          voice: input.voice,
           voiceStability: input.voiceStability,
           voiceClarity: input.voiceClarity,
           image: input.image ?? undefined

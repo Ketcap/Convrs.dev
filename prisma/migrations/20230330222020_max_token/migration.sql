@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Chatroom" ADD COLUMN     "maxToken" INTEGER NOT NULL DEFAULT 250;
