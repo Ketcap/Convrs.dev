@@ -1,10 +1,22 @@
 import { Divider, Modal, Paper, Text } from "@mantine/core";
-import { isSet } from "util/types";
+import { trpc } from "../../lib/trpcClient";
+import { user } from "../../states/authentication";
+import { AvatarSelect } from "../AvatarSelect";
 import { ElevenLabs } from "./ElevenLabs";
 import { OpenAI } from "./OpenAI";
 import { isSettingsVisible } from "./state";
 
 export const Settings = () => {
+  const { isLoading, mutate } = trpc.user.updateAvatar.useMutation({
+    onSuccess: (data) => {
+      const oldUserInfo = user.peek();
+      if (!oldUserInfo) return;
+      user.value = {
+        ...oldUserInfo,
+        image: data.image,
+      };
+    },
+  });
   return (
     <Modal
       title="Settings"
@@ -21,6 +33,15 @@ export const Settings = () => {
       <ElevenLabs />
 
       <Divider label="Account configuration" labelPosition="center" my="lg" />
+
+      <AvatarSelect
+        onChange={(avatar) => {
+          mutate(avatar);
+        }}
+        loading={isLoading}
+        disabled={isLoading}
+        value={user?.value?.image}
+      />
     </Modal>
   );
 };

@@ -19,23 +19,13 @@ import {
 import { useEffect } from "react";
 import { trpc } from "../lib/trpcClient";
 import { onErrorHandler } from "../lib/trpcUtils";
+import { user } from "../states/authentication";
 import { currentChatroom } from "../states/chatrooms";
 import { ChatInput, chatState } from "../states/chatState";
 import { AIAvatar } from "./AIAvatar";
 import { ChatGenerateVoice } from "./ChatGenerateVoice";
 
 export interface ChatItemProps extends ChatInput {}
-
-const ChatItemUser = ({ senderType }: { senderType: SenderType }) => (
-  <Grid.Col
-    span={"content"}
-    p={0}
-    pl={8}
-    sx={{ justifyContent: "flex-end", display: "inline-flex" }}
-  >
-    <AIAvatar src={senderType === SenderType.User ? "/ai-7.png" : "/ai.png"} />
-  </Grid.Col>
-);
 
 export const ChatItem = (chatInput: ChatItemProps) => {
   const { mutate, isLoading } = trpc.message.starMessage.useMutation({
@@ -96,7 +86,20 @@ export const ChatItem = (chatInput: ChatItemProps) => {
     <Paper pos="relative">
       <Grid align={"flex-end"} m={0}>
         <Grid.Col span={1}>
-          <ChatItemUser senderType={senderType} />
+          <Grid.Col
+            span={"content"}
+            p={0}
+            pl={8}
+            sx={{ justifyContent: "flex-end", display: "inline-flex" }}
+          >
+            <AIAvatar
+              src={`/ai/${
+                senderType === SenderType.User
+                  ? user.value?.image
+                  : currentChatroom.value?.image
+              }`}
+            />
+          </Grid.Col>
         </Grid.Col>
         <Grid.Col
           span={11}

@@ -10,6 +10,7 @@ const createChatroomInput = z.object({
   voice: z.string().nullable(),
   voiceStability: z.number().min(0).max(1).default(0.60).nullable(),
   voiceClarity: z.number().min(0).max(1).default(0.65).nullable(),
+  image: z.string().nonempty().nullable().default('ai-1.png'),
 })
 
 
@@ -27,6 +28,7 @@ export const chatroomRouter = router({
           model: input.openAIModel,
           voiceStability: input.voiceStability,
           voiceClarity: input.voiceClarity,
+          image: input.image ?? undefined
         }
       })
     }),

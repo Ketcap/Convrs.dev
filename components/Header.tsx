@@ -14,7 +14,9 @@ export const Header = () => {
             opened={navbarState.value}
             onClick={() => (navbarState.value = !navbarState.value)}
           />
-          <AIAvatar src="/ai.png" />
+          {currentChatroom.value && (
+            <AIAvatar src={`/ai/${currentChatroom.value.image}`} />
+          )}
           <Box>
             {currentChatroom.value?.name ?? "Pick a chatroom to continue"}
           </Box>

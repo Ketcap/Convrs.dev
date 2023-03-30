@@ -15,6 +15,7 @@ model User {
   id    String @id @default(cuid())
   email String @unique
   name  String
+  image String @default("ai-23.png")
 
   Messages Message[]
 
@@ -26,6 +27,8 @@ model User {
 
 model Chatroom {
   id String @id @default(cuid())
+
+  image String @default("ai-4.png")
 
   name           String // Optional name for the chatroom
   model          String // OpenAI model used for the chatroom

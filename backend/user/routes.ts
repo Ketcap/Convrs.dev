@@ -13,6 +13,18 @@ export const userRouter = router({
   me: privateProcedure.query(async ({ ctx }) => {
     return ctx.user
   }),
+  updateAvatar: privateProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      return ctx.prisma.user.update({
+        where: {
+          id: ctx.user.id,
+        },
+        data: {
+          image: input,
+        },
+      });
+    }),
   config: privateProcedure.input(
     configInput
   ).mutation(async ({ ctx, input }) => {

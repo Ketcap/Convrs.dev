@@ -24,6 +24,7 @@ import { onErrorHandler } from "../../lib/trpcUtils";
 import { user } from "../../states/authentication";
 import { currentChatroom } from "../../states/chatrooms";
 import { voiceList } from "../../states/elevenLabs";
+import { AvatarSelect } from "../AvatarSelect";
 
 export interface NewChatroomModalProps extends ModalProps {}
 
@@ -32,6 +33,7 @@ export const NewChatroomModal = ({
   onClose,
 }: NewChatroomModalProps) => {
   const isVocieActive = useSignal<boolean>(false);
+  const selectedAvatar = useSignal<string>("ai-1.png");
   const util = trpc.useContext();
   const stability = useSignal(0.6);
   const clarity = useSignal(0.65);
@@ -94,6 +96,7 @@ export const NewChatroomModal = ({
     createRoom({
       ...data,
       ...voiceProps,
+      image: selectedAvatar.value,
     });
   });
 
@@ -114,6 +117,14 @@ export const NewChatroomModal = ({
           }
           error={form.errors.email && "Set Room Name"}
           radius="md"
+        />
+        <Space mt="xl" />
+        <AvatarSelect
+          onChange={(avatar) => (selectedAvatar.value = avatar)}
+          loading={isLoading}
+          disabled={isLoading}
+          value={selectedAvatar.value}
+          size="md"
         />
         <Box pos={"relative"}>
           <Divider label="OpenAI Settings" labelPosition="center" my="lg" />
