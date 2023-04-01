@@ -1,16 +1,11 @@
 import { Alert, Grid } from "@mantine/core";
 import { IconThumbUp } from "@tabler/icons-react";
-import { useEffect, useRef } from "react";
 import { chatState } from "../states/chatState";
 import { ChatItem } from "./ChatItem";
 
 export const Chat = () => {
-  const lastElement = useRef<HTMLDivElement>(null);
   const isEmpty = chatState.value.length === 0;
 
-  useEffect(() => {
-    lastElement.current?.scrollIntoView({ behavior: "smooth" });
-  }, [lastElement.current]);
   return (
     <Grid m={0} w="100%">
       {isEmpty && (
@@ -32,7 +27,16 @@ export const Chat = () => {
           mb="md"
           key={index}
           p={0}
-          ref={index === chatState.value.length - 1 ? lastElement : undefined}
+          ref={
+            index === chatState.value.length - 1
+              ? (ref) => {
+                  console.log(ref);
+                  if (ref) {
+                    ref.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }
+              : undefined
+          }
         >
           <ChatItem {...chat} key={index} />
         </Grid.Col>

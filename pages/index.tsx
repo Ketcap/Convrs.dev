@@ -48,6 +48,7 @@ export default function Home() {
     trpc.openAI.getCompletion.useMutation({
       onError: onErrorHandler,
       onSuccess: async (data) => {
+        addChatInput(data);
         if (voice) {
           getVoiceOutput({
             output: data.content,
@@ -60,7 +61,6 @@ export default function Home() {
             }
           });
         }
-        addChatInput(data);
       },
     });
 
