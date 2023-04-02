@@ -54,7 +54,7 @@ export const NewChatroomModal = ({
     initialValues: {
       name: "",
       openAIModel: "",
-      directive: "",
+      directive: "You are a helpful assistant",
       voice: "",
       maxToken: 250,
     },
