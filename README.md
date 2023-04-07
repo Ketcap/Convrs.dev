@@ -1,4 +1,4 @@
-# Talking to AI
+# Convrs.dev
 
 This project is created to have combination of multiple tools and how to combine them to reach the full power of all these API integrations and AI.
 
