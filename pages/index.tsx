@@ -123,10 +123,39 @@ export default function Home() {
       return;
     }
     const val = ref.current!.value;
-    sendMessage({
-      content: `${input}  ${val}`,
+    const content = `${input}  ${val}`;
+    const randomId = createId();
+    // optimistic update
+    addChatInput({
+      id: randomId,
+      content,
       chatroomId: currentChatRoomId,
+      createdAt: new Date(),
+      isFavorite: false,
+      senderType: SenderType.User,
+      userId: `${user.peek()?.id}`,
+      Voice: null,
     });
+    sendMessage(
+      {
+        content,
+        chatroomId: currentChatRoomId,
+      },
+      {
+        onSuccess: async (data) => {
+          // correct the update with the correct id and other information
+          editChatInput(randomId, data);
+          getAnswer({
+            chatroomId: data.chatroomId,
+            content: data.content,
+          });
+        },
+        onError: (err) => {
+          onErrorHandler(err);
+          removeChatInput(randomId);
+        },
+      }
+    );
     ref.current!.value = "";
   };
 

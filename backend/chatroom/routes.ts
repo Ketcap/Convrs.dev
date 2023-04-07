@@ -76,7 +76,7 @@ export const messageRouter = router({
   getChatroomMessages: privateProcedure
     .input(getChatroomMessagesInput)
     .query(async ({ ctx, input }) => {
-      const { chatroomId, page } = input;
+      const { chatroomId } = input;
       const limit = 50;
       return ctx.prisma.message.findMany({
         where: {
@@ -85,9 +85,7 @@ export const messageRouter = router({
             id: chatroomId
           }
         },
-        take: limit,
         orderBy: [{ createdAt: 'asc' }],
-        ...(page && ({ skip: (page - 1) * limit }))
       })
     }),
   /**
