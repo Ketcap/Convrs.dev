@@ -30,6 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           message: transcript.data.text
         });
       } catch (e) {
+        console.error(e);
         res.status(400).json({
           message: (e as Error).message,
           error: "Error while fetching response"
