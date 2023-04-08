@@ -5,6 +5,7 @@ import {
   ActionIcon,
   Progress,
   Grid,
+  Box,
 } from "@mantine/core";
 import { useClipboard } from "@mantine/hooks";
 import { useSignal } from "@preact/signals-react";
@@ -61,7 +62,6 @@ export const ChatItem = (chatInput: ChatItemProps) => {
   });
   const clipboard = useClipboard();
   const { senderType, content, audio, markdown, isFavorite } = chatInput;
-  const isRoomVoiceAvailable = currentChatroom.value?.voice;
   const currentProgress = useSignal(0);
   const isPlaying = useSignal(false);
 
@@ -82,83 +82,71 @@ export const ChatItem = (chatInput: ChatItemProps) => {
     }
   });
 
+  const isUser = senderType === SenderType.User;
+
   return (
-    <Paper pos="relative">
-      <Grid align={"flex-end"} m={0}>
-        <Grid.Col span={1}>
-          <Grid.Col
-            span={"content"}
-            p={0}
-            pl={8}
-            sx={{ justifyContent: "flex-end", display: "inline-flex" }}
-          >
-            <AIAvatar
-              src={`/ai/${
-                senderType === SenderType.User
-                  ? user.value?.image
-                  : currentChatroom.value?.image
-              }`}
-            />
-          </Grid.Col>
-        </Grid.Col>
-        <Grid.Col
-          span={11}
-          bg="#f2f2f7"
-          sx={{ borderRadius: 4 }}
-          pos="relative"
-        >
+    <Paper pos="relative" withBorder>
+      <Group position="left" noWrap p={8} pb="0">
+        <Box sx={{ display: "flex", alignSelf: "flex-start" }}>
+          <AIAvatar
+            src={`/ai/${
+              (isUser ? user.value?.image : currentChatroom.value?.image) ??
+              "ai-1.png"
+            }`}
+          />
+        </Box>
+        <Box sx={{ borderRadius: 4, display: "flex", flex: 1 }} pos="relative">
           <TypographyStylesProvider>
             <div dangerouslySetInnerHTML={{ __html: markdown ?? content }} />
           </TypographyStylesProvider>
+        </Box>
+      </Group>
 
-          {/* Bottom Action Items */}
-          <Group position="right" spacing="xs">
-            <ActionIcon onClick={() => clipboard.copy(content)}>
-              <IconCopy />
-            </ActionIcon>
-            {!isRoomVoiceAvailable && !audio && (
-              <ChatGenerateVoice chatInput={chatInput} />
-            )}
-            {audio && (
-              <Group position="apart">
-                <>
-                  <Progress
-                    value={currentProgress.value}
-                    pos="absolute"
-                    sx={{ left: 0, right: 0, bottom: 0, animation: "all 20ms" }}
-                  />
-                  <ActionIcon
-                    onClick={() => {
-                      const isPlayAction = isPlaying.value;
+      {/* Bottom Action Items */}
+      <Group position="right" pr="sm" pb={8}>
+        <ActionIcon onClick={() => clipboard.copy(content)}>
+          <IconCopy />
+        </ActionIcon>
+        {audio ? (
+          <Group position="apart">
+            <>
+              <Progress
+                value={currentProgress.value}
+                pos="absolute"
+                sx={{ left: 0, right: 0, bottom: 0, animation: "all 20ms" }}
+              />
+              <ActionIcon
+                onClick={() => {
+                  const isPlayAction = isPlaying.value;
 
-                      if (!isPlayAction) {
-                        audio.currentTime = 0;
+                  if (!isPlayAction) {
+                    audio.currentTime = 0;
 
-                        audio.play().catch(console.log);
-                      }
-                      if (isPlayAction) {
-                        audio.pause();
-                      }
-                      isPlaying.value = !isPlaying.value;
-                    }}
-                  >
-                    {isPlaying.value ? <IconPlayerStop /> : <IconPlayerPlay />}
-                  </ActionIcon>
-                </>
-              </Group>
-            )}
-            <ActionIcon
-              color="orange"
-              disabled={isLoading}
-              onClick={() =>
-                mutate({ isFavorite: !isFavorite, messageId: chatInput.id })
-              }
-            >
-              {isFavorite ? <IconStarFilled /> : <IconStar color="orange" />}
-            </ActionIcon>
+                    audio.play().catch(console.log);
+                  }
+                  if (isPlayAction) {
+                    audio.pause();
+                  }
+                  isPlaying.value = !isPlaying.value;
+                }}
+              >
+                {isPlaying.value ? <IconPlayerStop /> : <IconPlayerPlay />}
+              </ActionIcon>
+            </>
           </Group>
-        </Grid.Col>
-      </Grid>
+        ) : (
+          <ChatGenerateVoice chatInput={chatInput} />
+        )}
+        <ActionIcon
+          color="orange"
+          disabled={isLoading}
+          onClick={() =>
+            mutate({ isFavorite: !isFavorite, messageId: chatInput.id })
+          }
+        >
+          {isFavorite ? <IconStarFilled /> : <IconStar color="orange" />}
+        </ActionIcon>
+      </Group>
     </Paper>
   );
 };

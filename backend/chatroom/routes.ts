@@ -34,6 +34,19 @@ export const chatroomRouter = router({
         }
       })
     }),
+  getChatroom: privateProcedure
+    .input(z.object({
+      chatroomId: z.string()
+    }))
+    .query(async ({ ctx, input }) => {
+      const { chatroomId } = input;
+      return ctx.prisma.chatroom.findUniqueOrThrow({
+        where: {
+          id: chatroomId,
+          userId: ctx.user.id
+        }
+      })
+    }),
   getChatrooms: privateProcedure.query(async ({ ctx }) => {
     return ctx.prisma.chatroom.findMany({
       where: {

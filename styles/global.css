@@ -1,5 +1,4 @@
 html, body, #__next, #__next> div{
     height: 100%;
-    background-color: #f2f2f7;
     overflow: auto;
 }

@@ -65,7 +65,7 @@ export const getVoiceOutput = async ({
     voiceClarity = 0.65,
     voiceStability = 0.60
   } = currentChatroom.peek() || {}
-  console.log(voiceClarity, voiceStability)
+
   const responseVoice = await fetch(`${elevenLabsUrl}/text-to-speech/${voiceKey}`, {
     method: 'POST',
     headers: {

@@ -1,6 +1,9 @@
 import { Box, Burger, Group, Header as MantineHeader } from "@mantine/core";
-import { currentChatroom } from "../states/chatrooms";
-import { navbarState } from "../states/navbarState";
+
+import { Navbar } from "@/components/Navbar";
+import { currentChatroom } from "@/states/chatrooms";
+import { navbarState } from "@/states/navbarState";
+
 import { AIAvatar } from "./AIAvatar";
 import { CurrentChatInfo } from "./CurrentChatInfo";
 import { Notifications } from "./Notifications";

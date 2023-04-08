@@ -7,7 +7,7 @@ export const Chat = () => {
   const isEmpty = chatState.value.length === 0;
 
   return (
-    <Grid m={0} w="100%">
+    <Grid m={0} gutter="xs" w="100%">
       {isEmpty && (
         <Grid.Col span={12} mb="md" p={0}>
           <Alert
@@ -24,13 +24,10 @@ export const Chat = () => {
       {chatState.value.map((chat, index) => (
         <Grid.Col
           span={12}
-          mb="md"
           key={index}
-          p={0}
           ref={
             index === chatState.value.length - 1
               ? (ref) => {
-                  console.log(ref);
                   if (ref) {
                     ref.scrollIntoView({ behavior: "smooth", block: "start" });
                   }

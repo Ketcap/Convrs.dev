@@ -3,6 +3,8 @@ import { ChatCompletionRequestMessage } from "openai";
 import { z } from "zod";
 import { privateProcedure, router, t } from "@/lib/trpc";
 import { getConfigOrThrow } from "@/backend/util/config";
+import { TRPCError } from "@trpc/server";
+
 import { createOpenAI } from "./util";
 
 const openAIProcedure = privateProcedure.use(async ({ next, ctx }) => {
@@ -16,7 +18,7 @@ const openAIProcedure = privateProcedure.use(async ({ next, ctx }) => {
     });
   }
   catch (e) {
-    throw new Error('Not Authenticated');
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Not Authenticated' })
   }
 });
 

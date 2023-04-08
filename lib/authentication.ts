@@ -1,6 +1,6 @@
 import { Session, User } from "@supabase/supabase-js";
 import nookies from "nookies";
-import { refreshToken, token } from "../states/authentication";
+import { refreshToken, token, user } from "@/states/authentication";
 
 
 export const setAuthentication = async (data: {
@@ -20,4 +20,13 @@ export const setAuthentication = async (data: {
   token.value = data.session?.access_token;
   refreshToken.value = data.session?.refresh_token;
   callback();
+}
+
+
+export const removeAuthentication = async () => {
+  nookies.destroy(null, "token");
+  nookies.destroy(null, "refreshToken");
+  token.value = undefined;
+  refreshToken.value = undefined;
+  user.value = null;
 }
