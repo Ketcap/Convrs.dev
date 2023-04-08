@@ -2,7 +2,7 @@ import { Paper, Space, Text, Title } from "@mantine/core";
 
 export interface InforCardProps {
   title: string;
-  description: string;
+  description: React.ReactNode;
 }
 
 export const InfoCard = ({ title, description }: InforCardProps) => {
