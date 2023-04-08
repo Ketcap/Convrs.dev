@@ -71,11 +71,11 @@ export default function Home() {
       onError: onErrorHandler,
       onSuccess: async (data) => {
         addChatInput(data);
-        if (voice) {
+        if (currentChatroom.value?.voice) {
           getVoiceOutput({
             output: data.content,
             messageId: data.id,
-            voiceKey: voice,
+            voiceKey: currentChatroom.value.voice,
             mutateAsync: voiceToMessageMutation,
           }).then((res) => {
             if (res) {
@@ -246,7 +246,8 @@ export default function Home() {
             ref={(inputRef) => (ref.current = inputRef!)}
             placeholder="If you have any input that you have copied from somewhere, paste it here then follow up with the recording button to talk about it."
             mah={75}
-            miw="75%"
+            rows={1}
+            miw="55%"
             sx={{ display: "flex", flex: 1 }}
             wrapperProps={{ sx: { flex: 1 } }}
             disabled={!isApplicationAvailable}

@@ -21,6 +21,7 @@ export const ChatRoomItem = ({ chatroom }: ChatRoomItemProps) => {
       refetch();
       if (isActive) {
         currentChatroom.value = undefined;
+        router.push("/");
       }
     },
   });

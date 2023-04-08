@@ -100,10 +100,12 @@ export const Navbar = () => {
           )}
         </Stack>
       </Stack>
-      <NewChatroomModal
-        opened={newChatroomModal.value}
-        onClose={() => (newChatroomModal.value = false)}
-      />
+      {user.value && (
+        <NewChatroomModal
+          opened={newChatroomModal.value}
+          onClose={() => (newChatroomModal.value = false)}
+        />
+      )}
     </Box>
   );
 };

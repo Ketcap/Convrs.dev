@@ -10,7 +10,7 @@ import { Notifications } from "./Notifications";
 
 export const Header = () => {
   return (
-    <MantineHeader bg="#202123" height={55} pos="sticky" zIndex={10} p="sm">
+    <MantineHeader height={55} pos="sticky" zIndex={10} p="sm">
       <Group w="100%" h="100%" position="apart">
         <Group>
           <Burger
