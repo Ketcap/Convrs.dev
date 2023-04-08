@@ -6,16 +6,18 @@ import {
   useMantineColorScheme,
 } from "@mantine/core";
 import { useSpotlight } from "@mantine/spotlight";
-import { IconMoon, IconPlus, IconSun } from "@tabler/icons-react";
+import { IconLogout, IconMoon, IconPlus, IconSun } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { trpc } from "../../lib/trpcClient";
-import { user } from "../../states/authentication";
-import { navbarState, newChatroomModal } from "../../states/navbarState";
+
+import { trpc } from "@/lib/trpcClient";
+import { user } from "@/states/authentication";
+import { navbarState, newChatroomModal } from "@/states/navbarState";
 import { NewChatroomModal } from "../NewChatroomModal/NewChatroomModal";
 import { Button } from "./Button";
 import { ChatRoomItem } from "./ChatRoomItem";
 import { ProfileButton } from "./ProfileButton";
+import { removeAuthentication } from "../../lib/authentication";
 
 const useStyles = createStyles((theme) => ({
   navbar: {
@@ -29,10 +31,14 @@ export const Navbar = () => {
   const spotlight = useSpotlight();
   const router = useRouter();
   const { classes } = useStyles();
-  const { data: chatrooms = [], isLoading: isChatroomLoading } =
+  const utils = trpc.useContext();
+
+  const { data = [], isLoading: isChatroomLoading } =
     trpc.chatroom.getChatrooms.useQuery(undefined, {
       enabled: !!user.value?.id,
     });
+
+  const chatrooms = user.value ? data : [];
 
   useEffect(() => {
     if (!isChatroomLoading && chatrooms.length > 0) {
@@ -54,14 +60,14 @@ export const Navbar = () => {
       w={{ base: 250 }}
       display={navbarState.value ? "flex" : "none"}
       className={classes.navbar}
+      p="sm"
     >
-      <Stack justify={"space-between"} w="100%" p="sm">
+      <Stack justify={"space-between"} w="100%">
         <Stack
           sx={{
             display: "flex",
             flexDirection: "column",
             flex: 5,
-            overflow: "auto",
           }}
         >
           <Button
@@ -98,6 +104,16 @@ export const Navbar = () => {
               name={user.value.name}
             />
           )}
+          <Button
+            right={<IconLogout color="#ECECF1" />}
+            onClick={() => {
+              removeAuthentication();
+              utils.invalidate();
+              router.push("/");
+            }}
+          >
+            <Text color="#ECECF1">Logout</Text>
+          </Button>
         </Stack>
       </Stack>
       {user.value && (

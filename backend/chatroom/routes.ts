@@ -42,7 +42,8 @@ export const chatroomRouter = router({
       const { chatroomId } = input;
       return ctx.prisma.chatroom.findUniqueOrThrow({
         where: {
-          id: chatroomId
+          id: chatroomId,
+          userId: ctx.user.id
         }
       })
     }),

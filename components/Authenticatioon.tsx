@@ -26,26 +26,6 @@ import { setAuthentication } from "../lib/authentication";
 
 export const Authentication = () => {
   const [type, toggle] = useToggle(["login", "register"] as const);
-  const { isLoading, refetch } = trpc.user.me.useQuery(undefined, {
-    onSuccess: (data) => {
-      user.value = data;
-    },
-  });
-  const { mutate: login, isLoading: signInLoading } =
-    trpc.authentication.signIn.useMutation({
-      onError: onErrorHandler,
-      onSuccess: (data) => {
-        setAuthentication(data, refetch);
-      },
-    });
-  const { mutate: register, isLoading: signUpLoading } =
-    trpc.authentication.signUp.useMutation({
-      onError: onErrorHandler,
-      onSuccess: (data) => {
-        setAuthentication(data, refetch);
-      },
-    });
-
   const form = useForm({
     initialValues: {
       email: "",
@@ -70,6 +50,29 @@ export const Authentication = () => {
       },
     },
   });
+
+  const { isLoading, refetch } = trpc.user.me.useQuery(undefined, {
+    onSuccess: (data) => {
+      user.value = data;
+      form.reset();
+    },
+  });
+  const { mutate: login, isLoading: signInLoading } =
+    trpc.authentication.signIn.useMutation({
+      onError: onErrorHandler,
+      onSuccess: (data) => {
+        setAuthentication(data, refetch);
+        form.reset();
+      },
+    });
+  const { mutate: register, isLoading: signUpLoading } =
+    trpc.authentication.signUp.useMutation({
+      onError: onErrorHandler,
+      onSuccess: (data) => {
+        setAuthentication(data, refetch);
+        form.reset();
+      },
+    });
 
   const onSubmit = form.onSubmit((val, event) => {
     event.preventDefault();
