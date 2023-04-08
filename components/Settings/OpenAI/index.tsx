@@ -27,7 +27,7 @@ export const OpenAI = () => {
     },
   });
 
-  const { isLoading, mutateAsync } = trpc.user.config.useMutation({
+  const { isLoading, mutate } = trpc.user.config.useMutation({
     onError: onErrorHandler,
     onSuccess: () => {
       refetch();
@@ -52,7 +52,7 @@ export const OpenAI = () => {
   });
 
   const onSubmit = form.onSubmit((val) => {
-    mutateAsync({
+    mutate({
       application: Application.OpenAI,
       key: val.key,
     });

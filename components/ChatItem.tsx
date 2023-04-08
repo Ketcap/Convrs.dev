@@ -62,7 +62,6 @@ export const ChatItem = (chatInput: ChatItemProps) => {
   });
   const clipboard = useClipboard();
   const { senderType, content, audio, markdown, isFavorite } = chatInput;
-  const isRoomVoiceAvailable = currentChatroom.value?.voice;
   const currentProgress = useSignal(0);
   const isPlaying = useSignal(false);
 
@@ -108,10 +107,7 @@ export const ChatItem = (chatInput: ChatItemProps) => {
         <ActionIcon onClick={() => clipboard.copy(content)}>
           <IconCopy />
         </ActionIcon>
-        {!isRoomVoiceAvailable && !audio && (
-          <ChatGenerateVoice chatInput={chatInput} />
-        )}
-        {audio && (
+        {audio ? (
           <Group position="apart">
             <>
               <Progress
@@ -138,6 +134,8 @@ export const ChatItem = (chatInput: ChatItemProps) => {
               </ActionIcon>
             </>
           </Group>
+        ) : (
+          <ChatGenerateVoice chatInput={chatInput} />
         )}
         <ActionIcon
           color="orange"
