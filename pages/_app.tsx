@@ -32,7 +32,6 @@ function App({ Component, pageProps, ...rest }: AppProps) {
               pos="relative"
               p="md"
             >
-              <AppUpdateAlert />
               <Component {...pageProps} />
             </Box>
           </Box>
