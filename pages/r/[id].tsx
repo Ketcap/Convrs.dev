@@ -251,6 +251,7 @@ export default function Home() {
             sx={{ display: "flex", flex: 1 }}
             wrapperProps={{ sx: { flex: 1 } }}
             disabled={!isApplicationAvailable}
+            rightSection={<IconSend onClick={onSend} />}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -258,9 +259,6 @@ export default function Home() {
               }
             }}
           />
-          <ActionIcon disabled={!currentChatroomId}>
-            <IconSend onClick={onSend} />
-          </ActionIcon>
           <RecordButton
             disabled={!isApplicationAvailable}
             onClick={async (state) =>
