@@ -82,9 +82,10 @@ export const ChatItem = (chatInput: ChatItemProps) => {
     }
   });
 
+  const isUser = senderType === SenderType.User;
   return (
-    <Paper pos="relative">
-      <Grid align={"flex-end"} m={0}>
+    <Paper pos="relative" withBorder>
+      <Grid m={0}>
         <Grid.Col span={1}>
           <Grid.Col
             span={"content"}
@@ -94,19 +95,13 @@ export const ChatItem = (chatInput: ChatItemProps) => {
           >
             <AIAvatar
               src={`/ai/${
-                senderType === SenderType.User
-                  ? user.value?.image
-                  : currentChatroom.value?.image
+                (isUser ? user.value?.image : currentChatroom.value?.image) ??
+                "ai-1.png"
               }`}
             />
           </Grid.Col>
         </Grid.Col>
-        <Grid.Col
-          span={11}
-          bg="#f2f2f7"
-          sx={{ borderRadius: 4 }}
-          pos="relative"
-        >
+        <Grid.Col span={11} sx={{ borderRadius: 4 }} pos="relative">
           <TypographyStylesProvider>
             <div dangerouslySetInnerHTML={{ __html: markdown ?? content }} />
           </TypographyStylesProvider>

@@ -1,13 +1,11 @@
 import {
   UnstyledButton,
-  UnstyledButtonProps,
   Group,
   Avatar,
   Text,
   createStyles,
   Box,
 } from "@mantine/core";
-import { IconChevronRight } from "@tabler/icons-react";
 import { Settings } from "../Settings";
 import { isSettingsVisible } from "../Settings/state";
 
@@ -15,33 +13,26 @@ const useStyles = createStyles((theme) => ({
   user: {
     display: "block",
     width: "100%",
-    padding: theme.spacing.md,
-    color: theme.black,
-    "&:hover": {
-      backgroundColor: theme.colors.gray[0],
-    },
+    color: "#ECECF1",
+    borderRadius: 8,
+    padding: theme.spacing.xs,
+    backgroundColor: "#343540",
   },
 }));
 
-interface ProfileButtonProps extends UnstyledButtonProps {
+interface ProfileButtonProps {
   image: string;
   name: string;
   email: string;
 }
 
-export function ProfileButton({
-  image,
-  name,
-  email,
-  ...others
-}: ProfileButtonProps) {
+export function ProfileButton({ image, name, email }: ProfileButtonProps) {
   const { classes } = useStyles();
 
   return (
     <>
       <UnstyledButton
         className={classes.user}
-        {...others}
         onClick={() => (isSettingsVisible.value = true)}
       >
         <Group>
@@ -51,14 +42,12 @@ export function ProfileButton({
             <Text size="sm" weight={500}>
               {name}
             </Text>
-            <Box w={100}>
+            <Box w={150}>
               <Text color="dimmed" size="xs" truncate={true}>
                 {email}
               </Text>
             </Box>
           </div>
-
-          <IconChevronRight size="0.9rem" stroke={1.5} />
         </Group>
       </UnstyledButton>
       <Settings />

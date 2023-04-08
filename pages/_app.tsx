@@ -1,46 +1,75 @@
-import { Alert, Box, MantineProvider } from "@mantine/core";
-import { Analytics } from "@vercel/analytics/react";
+import {
+  ColorScheme,
+  ColorSchemeProvider,
+  MantineProvider,
+  useMantineColorScheme,
+} from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
-import { Header } from "@/components/Header";
-import { AppProps } from "next/app";
+import { Analytics } from "@vercel/analytics/react";
+import NextApp, { AppContext, AppProps, AppInitialProps } from "next/app";
+import nookies from "nookies";
+import { useSignal } from "@preact/signals-react";
+import { IconSearch } from "@tabler/icons-react";
+import { SpotlightAction, SpotlightProvider } from "@mantine/spotlight";
+
+import { trpc } from "@/lib/trpcClient";
+import { basicActions } from "@/components/Spotlight/actions";
+import { Authentication } from "@/components/Authenticatioon";
+import { Spotlight } from "@/components/Spotlight";
 
 import "@/styles/global.css";
-import { Navbar } from "../components/Navbar/Navbar";
-import { Authentication } from "../components/Authenticatioon";
-import { trpc } from "../lib/trpcClient";
-import { AppUpdateAlert } from "../components/AppUpdateAlert";
 
-function App({ Component, pageProps, ...rest }: AppProps) {
+function App({ Component, pageProps }: AppProps<{ colorScheme: ColorScheme }>) {
+  const actions = useSignal<SpotlightAction[]>(basicActions);
+  const colorSchemeState = useSignal<ColorScheme>(pageProps.colorScheme);
+  const toggleColorScheme = (value?: ColorScheme) => {
+    colorSchemeState.value =
+      value || (colorSchemeState.value === "dark" ? "light" : "dark");
+
+    nookies.set(null, "mantine-color-scheme", colorSchemeState.value);
+  };
+
   return (
-    <>
-      <MantineProvider withGlobalStyles withNormalizeCSS>
-        <Notifications position="top-right" />
-
-        <Box w={"100%"} sx={{ display: "flex", flexDirection: "column" }} p={0}>
-          <Header />
-          <Box sx={{ display: "flex", flex: 1 }}>
-            <Box pos="relative" bg="#fff">
-              <Navbar />
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flex: 1,
-                background: "#fff",
-                flexDirection: "column",
-              }}
-              pos="relative"
-              p="md"
-            >
-              <Component {...pageProps} />
-            </Box>
-          </Box>
-        </Box>
-        <Authentication />
+    <ColorSchemeProvider
+      colorScheme={colorSchemeState.value}
+      toggleColorScheme={toggleColorScheme}
+    >
+      <MantineProvider
+        theme={{ colorScheme: colorSchemeState.value }}
+        withGlobalStyles
+        withNormalizeCSS
+      >
+        <SpotlightProvider
+          shortcut={["/", "mod + /"]}
+          actions={actions.value}
+          onActionsChange={(newActions) => (actions.value = newActions)}
+          searchIcon={<IconSearch size="1.2rem" />}
+          searchPlaceholder="Search..."
+          nothingFoundMessage="Nothing found..."
+        >
+          <Spotlight />
+          <Notifications position="top-right" />
+          <Component {...pageProps} />
+          <Authentication />
+        </SpotlightProvider>
       </MantineProvider>
       <Analytics />
-    </>
+    </ColorSchemeProvider>
   );
 }
+
+App.getInitialProps = async (
+  appContext: AppContext
+): Promise<AppInitialProps> => {
+  const appProps = await NextApp.getInitialProps(appContext);
+  const cookies = nookies.get(appContext.ctx);
+  return {
+    ...appProps,
+    pageProps: {
+      ...appProps.pageProps,
+      colorScheme: cookies["mantine-color-scheme"] || "light",
+    },
+  };
+};
 
 export default trpc.withTRPC(App);

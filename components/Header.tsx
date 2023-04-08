@@ -1,13 +1,16 @@
 import { Box, Burger, Group, Header as MantineHeader } from "@mantine/core";
-import { currentChatroom } from "../states/chatrooms";
-import { navbarState } from "../states/navbarState";
+
+import { Navbar } from "@/components/Navbar";
+import { currentChatroom } from "@/states/chatrooms";
+import { navbarState } from "@/states/navbarState";
+
 import { AIAvatar } from "./AIAvatar";
 import { CurrentChatInfo } from "./CurrentChatInfo";
 import { Notifications } from "./Notifications";
 
 export const Header = () => {
   return (
-    <MantineHeader height={55} pos="sticky" zIndex={10} p="sm">
+    <MantineHeader bg="#202123" height={55} pos="sticky" zIndex={10} p="sm">
       <Group w="100%" h="100%" position="apart">
         <Group>
           <Burger
