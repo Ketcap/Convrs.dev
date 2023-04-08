@@ -19,7 +19,9 @@ const isAuth = t.middleware(async ({ next, ctx }) => {
   const refreshToken = ctx.req.headers.refreshToken;
   try {
     const { data } = await ctx.supabase.auth.getUser(token);
-    if (!data?.user) throw new Error('Not Authenticated');
+    if (!data?.user) {
+      throw new TRPCError({ code: 'FORBIDDEN', message: 'Not Authenticated' })
+    }
     const user = await ctx.prisma.user.findUniqueOrThrow({
       where: {
         id: data.user?.id

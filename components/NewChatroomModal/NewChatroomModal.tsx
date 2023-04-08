@@ -121,6 +121,7 @@ export const NewChatroomModal = ({
           label="Room Name"
           placeholder="My new chatroom"
           value={form.values.name}
+          ref={(ref) => ref?.focus()}
           onChange={(event) =>
             form.setFieldValue("name", event.currentTarget.value)
           }

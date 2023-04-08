@@ -60,14 +60,15 @@ export const Navbar = () => {
       w={{ base: 250 }}
       display={navbarState.value ? "flex" : "none"}
       className={classes.navbar}
-      p="sm"
+      p={8}
     >
-      <Stack justify={"space-between"} w="100%">
+      <Stack justify={"space-between"} w="100%" mah="calc(100vh - 55px - 16px)">
         <Stack
           sx={{
             display: "flex",
             flexDirection: "column",
             flex: 5,
+            overflow: "auto",
           }}
         >
           <Button
