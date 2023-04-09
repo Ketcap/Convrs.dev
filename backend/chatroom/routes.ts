@@ -1,10 +1,11 @@
-import { SenderType } from "@prisma/client";
+import { RoomFeature, SenderType } from "@prisma/client";
 import { z } from "zod";
 import { privateProcedure, router } from "@/lib/trpc";
 
 
 const createChatroomInput = z.object({
   name: z.string(),
+  features: z.nativeEnum(RoomFeature).array().default([]),
   openAIModel: z.string().nonempty().default('gpt-3.5-turbo'),
   maxToken: z.number().min(1),
   directive: z.string(),
@@ -23,6 +24,9 @@ export const chatroomRouter = router({
       return ctx.prisma.chatroom.create({
         data: {
           name: input.name,
+          RoomFeatures: {
+            set: input.features
+          },
           userId: ctx.user.id,
           model: input.openAIModel,
           maxToken: input.maxToken,

@@ -41,6 +41,8 @@ model Chatroom {
   userId String // The user who created the chatroom
   User   User   @relation(fields: [userId], references: [id])
 
+  RoomFeatures RoomFeature[]
+
   createdAt DateTime  @default(now())
   Messages  Message[]
 }
@@ -97,4 +99,8 @@ model Config {
   User   User?   @relation(fields: [userId], references: [id])
 
   @@unique([userId, application, type])
+}
+
+enum RoomFeature {
+  OnlyLastMessage
 }

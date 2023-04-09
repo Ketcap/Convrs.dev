@@ -1,4 +1,4 @@
-import { Application, SenderType } from "@prisma/client";
+import { Application, RoomFeature, SenderType } from "@prisma/client";
 import { ChatCompletionRequestMessage } from "openai";
 import { z } from "zod";
 import { privateProcedure, router, t } from "@/lib/trpc";
@@ -51,12 +51,18 @@ export const openAIRouter = router({
           }
         }
       })
-      try {
-        const contextMessages: ChatCompletionRequestMessage[] = chatroom.Messages.map((message) => ({
+      let contextMessages: ChatCompletionRequestMessage[] = [];
+
+
+      if (!chatroom.RoomFeatures.includes(RoomFeature.OnlyLastMessage)) {
+        contextMessages = chatroom.Messages.map((message) => ({
           content: message.content,
           role: message.senderType === SenderType.User ? 'user' : 'assistant',
           name: message.senderType === SenderType.User ? ctx.user.name : 'assistant'
         }));
+      }
+      console.log(contextMessages)
+      try {
         const directive: [ChatCompletionRequestMessage] | [] = chatroom.directive ? [{
           content: chatroom.directive,
           role: 'system',

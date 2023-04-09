@@ -19,6 +19,8 @@ import {
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useSignal } from "@preact/signals-react";
+import { RoomFeature } from "@prisma/client";
+import { useRouter } from "next/router";
 import { z } from "zod";
 import { trpc } from "../../lib/trpcClient";
 import { onErrorHandler } from "../../lib/trpcUtils";
@@ -33,6 +35,7 @@ export const NewChatroomModal = ({
   opened,
   onClose,
 }: NewChatroomModalProps) => {
+  const router = useRouter();
   const isVocieActive = useSignal<boolean>(false);
   const selectedAvatar = useSignal<string>("ai-1.png");
   const util = trpc.useContext();
@@ -42,11 +45,13 @@ export const NewChatroomModal = ({
     onError: onErrorHandler,
     onSuccess: (data) => {
       currentChatroom.value = data;
+      router.push("/r/[id]", `/r/${data.id}`);
       util.chatroom.getChatrooms.setData(undefined, (old = []) => [
         ...old,
         data,
       ]);
       onClose();
+      form.reset();
     },
   });
 
@@ -55,6 +60,7 @@ export const NewChatroomModal = ({
       name: "",
       openAIModel: "",
       directive: "You are a helpful assistant",
+      roomFeatures: undefined as RoomFeature | undefined,
       voice: "",
       maxToken: 250,
     },
@@ -86,6 +92,9 @@ export const NewChatroomModal = ({
   const { data: modelData, isLoading: isModelLoading } =
     trpc.openAI.getModels.useQuery(undefined, {
       enabled: !!user.value,
+      onSuccess: (data) => {
+        form.setFieldValue("openAIModel", data[0]);
+      },
       onError: () => {
         notifications.show({
           title: "OpenAI cannot be loaded",
@@ -97,15 +106,18 @@ export const NewChatroomModal = ({
     });
 
   const onSubmit = form.onSubmit((data) => {
-    form.reset();
     if (modelData?.length) form.setFieldValue("openAIModel", modelData[0]);
     const voiceProps = isVocieActive.value
       ? { voiceClarity: clarity.value, voiceStability: stability.value }
       : {};
+    console.log(data);
+    // return;
     createRoom({
       ...data,
       ...voiceProps,
+      openAIModel: data.openAIModel || modelData?.[0],
       image: selectedAvatar.value,
+      features: data.roomFeatures ? [data.roomFeatures] : [],
     });
   });
 
@@ -126,6 +138,22 @@ export const NewChatroomModal = ({
           }
           error={form.errors.name && "Set Room Name"}
           radius="md"
+        />
+        <Space mt="xl" />
+        <Select
+          clearable
+          data={[
+            {
+              value: RoomFeature.OnlyLastMessage,
+              label: "Only Use Last Message",
+            },
+          ]}
+          value={form.values.roomFeatures}
+          onChange={(item) => {
+            form.setFieldValue("roomFeatures", item as RoomFeature);
+          }}
+          label="Room Features"
+          placeholder="Select Feature"
         />
         <Space mt="xl" />
         <AvatarSelect
