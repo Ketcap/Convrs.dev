@@ -1,33 +1,35 @@
 import { notifications } from "@mantine/notifications";
-import { refreshToken, token } from "./authentication";
+import { Application } from "@prisma/client";
+import { user } from "./authentication";
 
-type EndpointError = {
-  error: string;
-  message: string
-}
 type EndpointOutput = {
-  message: string;
-} | EndpointError
+  text: string;
+}
 
-
-export const onRecordingStop = async (blobs: Blob[], fn: (text: string) => void) => {
+export const onRecordingStop = async (blob: Blob[], fn: (text: string) => void) => {
   const formData = new FormData();
-  const blob = new Blob(blobs, { type: "audio/mpeg;" });
-  formData.append("file", blob);
+  const file = new File(blob, 'speech.mp3', {
+    type: 'audio/mpeg',
+  })
+  formData.append("file", file);
+  formData.append('model', 'whisper-1')
+  formData.append('language', 'en')
 
   try {
-    const transcript: EndpointOutput = await fetch('/api/openAI/whisper', {
+    const openAIConfig = user.peek()?.Configs.find(c => c.application === Application.OpenAI);
+    if (!openAIConfig) return;
+    const { key } = openAIConfig;
+    const transcript: EndpointOutput = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       body: formData,
       headers: {
-        authorization: token.peek() ?? '',
-        refreshToken: refreshToken.peek() ?? '',
+        "Authorization": `Bearer ${key}`,
       }
     }).then(res => res.json());
-    if (!transcript?.message) {
+    if (!(transcript as EndpointOutput).text) {
       throw new Error('No message')
     }
-    fn(transcript.message);
+    fn(transcript.text);
   } catch (e) {
     return notifications.show({
       title: "Ups!",

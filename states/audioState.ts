@@ -28,10 +28,12 @@ let stream: MediaStream | null = null;
 export const startRecording = async (fn: (text: string) => void) => {
   stream = await getAudioStream();
   if (!stream) return;
-  mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder = new MediaRecorder(stream, {
+    audioBitsPerSecond: 128000,
+  });
   let chunks: Blob[] = [];
-  mediaRecorder.ondataavailable = (e) => {
-    chunks = [...chunks, e.data];
+  mediaRecorder.ondataavailable = async ({ data }) => {
+    chunks = [...chunks, data];
   };
   mediaRecorder.onstop = () => {
     stream?.getTracks().forEach((track) => track.stop());
