@@ -72,6 +72,7 @@ export const Navbar = () => {
           }}
         >
           <Button
+            label="Start a new chat"
             onClick={() => {
               newChatroomModal.value = true;
             }}
@@ -85,6 +86,7 @@ export const Navbar = () => {
         </Stack>
         <Stack>
           <Button
+            label="Toggle navbar"
             onClick={() => toggleColorScheme()}
             right={
               colorScheme === "dark" ? (
@@ -106,6 +108,7 @@ export const Navbar = () => {
             />
           )}
           <Button
+            label="Logout"
             right={<IconLogout color="#ECECF1" />}
             onClick={() => {
               removeAuthentication();

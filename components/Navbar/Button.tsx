@@ -4,10 +4,12 @@ export interface ButtonProps {
   children: React.ReactNode;
   right?: React.ReactNode;
   onClick?: () => void;
+  label: string;
 }
-export const Button = ({ children, right, onClick }: ButtonProps) => {
+export const Button = ({ label, children, right, onClick }: ButtonProps) => {
   return (
     <UnstyledButton
+      aria-label={label}
       p="sm"
       onClick={onClick}
       sx={{
@@ -24,5 +26,3 @@ export const Button = ({ children, right, onClick }: ButtonProps) => {
     </UnstyledButton>
   );
 };
-
-// #C5C5D1

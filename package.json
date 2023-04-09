@@ -16,9 +16,11 @@
   },
   "dependencies": {
     "@emotion/react": "^11.10.6",
-    "@mantine/core": "latest",
+    "@emotion/server": "^11.10.0",
+    "@mantine/core": "^6.0.6",
     "@mantine/form": "latest",
-    "@mantine/hooks": "latest",
+    "@mantine/hooks": "^6.0.6",
+    "@mantine/next": "^6.0.6",
     "@mantine/notifications": "latest",
     "@mantine/prism": "latest",
     "@mantine/spotlight": "latest",

@@ -27,6 +27,7 @@ export const ChatRoomItem = ({ chatroom }: ChatRoomItemProps) => {
   });
   return (
     <Button
+      label={`Chatroom : ${chatroom.name}`}
       onClick={() => {
         currentChatroom.value = chatroom;
         router.push("/r/[id]", `/r/${chatroom.id}`);

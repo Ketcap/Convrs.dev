@@ -9,7 +9,7 @@ export default function Home() {
       <Center sx={{ height: "100%" }}>
         <Stack>
           <Center>
-            <Title>Convrs.dev</Title>
+            <Title order={2}>Convrs.dev</Title>
           </Center>
           <Grid gutter="md" p="lg">
             <Grid.Col span={12}>
