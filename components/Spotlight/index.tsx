@@ -16,7 +16,6 @@ export const Spotlight = () => {
         },
       },
     ]);
-    console.log("should be registered");
   }, []);
 
   return null;
