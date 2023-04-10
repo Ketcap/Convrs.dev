@@ -26,11 +26,13 @@ import { user } from "@/states/authentication";
 import { trpc } from "@/lib/trpcClient";
 import { getOpenAIAnswer } from "@/lib/chat";
 import { onErrorHandler } from "@/lib/trpcUtils";
+import { useSignal } from "@preact/signals-react";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
   const router = useRouter();
   const spotlight = useSpotlight();
+  const isThinking = useSignal(false);
   const currentChatroomId = router.query.id as string;
 
   const { mutateAsync: sendMessage } =
@@ -64,32 +66,36 @@ export default function Home() {
       }
     );
 
-  const isThinking = false;
   const getAnswer = useCallback(
     async ({ chatroomId }: { chatroomId: string }) => {
-      const { message, id } = (await getOpenAIAnswer(chatroomId)) ?? {};
-      if (!message || !id) return;
-      const chatroomMessage = await sendMessage({
-        chatroomId,
-        content: message,
-        role: SenderType.Assistant,
-      });
-      // update id from the optimistic update
-      editChatInput(id, {
-        id: chatroomMessage.id,
-      });
-      const { voice } = currentChatroom.peek() ?? {};
-      if (voice && message) {
-        getVoiceOutput({
-          messageId: chatroomMessage.id,
-          mutateAsync: voiceToMessageMutation,
-          output: message,
-          voiceKey: voice,
-        }).then((voiceOutput) => {
-          if (voiceOutput) {
-            addVoiceToChatInput(chatroomMessage.id, voiceOutput);
-          }
+      isThinking.value = true;
+      try {
+        const { message, id } = (await getOpenAIAnswer(chatroomId)) ?? {};
+        if (!message || !id) return;
+        const chatroomMessage = await sendMessage({
+          chatroomId,
+          content: message,
+          role: SenderType.Assistant,
         });
+        // update id from the optimistic update
+        editChatInput(id, {
+          id: chatroomMessage.id,
+        });
+        const { voice } = currentChatroom.peek() ?? {};
+        if (voice && message) {
+          getVoiceOutput({
+            messageId: chatroomMessage.id,
+            mutateAsync: voiceToMessageMutation,
+            output: message,
+            voiceKey: voice,
+          }).then((voiceOutput) => {
+            if (voiceOutput) {
+              addVoiceToChatInput(chatroomMessage.id, voiceOutput);
+            }
+          });
+        }
+      } finally {
+        isThinking.value = false;
       }
     },
     [sendMessage, voiceToMessageMutation]
@@ -97,7 +103,7 @@ export default function Home() {
 
   const isApplicationAvailable = !(
     isChatroomLoading ||
-    isThinking ||
+    isThinking.value ||
     !currentChatroomId
   );
 
@@ -144,6 +150,9 @@ export default function Home() {
       userId: `${user.peek()?.id}`,
       Voice: null,
     });
+    getAnswer({
+      chatroomId: currentChatroomId,
+    });
     sendMessage(
       {
         content: val,
@@ -153,10 +162,6 @@ export default function Home() {
         onSuccess: async (data) => {
           // correct the update with the correct id and other information
           editChatInput(randomId, data);
-          getAnswer({
-            chatroomId: data.chatroomId,
-            content: data.content,
-          });
         },
         onError: (err) => {
           onErrorHandler(err);
@@ -192,6 +197,9 @@ export default function Home() {
       userId: `${user.peek()?.id}`,
       Voice: null,
     });
+    getAnswer({
+      chatroomId: currentChatroomId,
+    });
     sendMessage(
       {
         content,
@@ -201,10 +209,6 @@ export default function Home() {
         onSuccess: async (data) => {
           // correct the update with the correct id and other information
           editChatInput(randomId, data);
-          getAnswer({
-            chatroomId: data.chatroomId,
-            content: data.content,
-          });
         },
         onError: (err) => {
           onErrorHandler(err);
@@ -245,7 +249,7 @@ export default function Home() {
       >
         <Group align={"center"} w="100%">
           <LoadingOverlay
-            visible={isThinking || isChatroomLoading}
+            visible={isThinking.value || isChatroomLoading}
             zIndex={5}
           />
           <Textarea
