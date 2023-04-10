@@ -1,10 +1,8 @@
-import { Application, RoomFeature, SenderType } from "@prisma/client";
-import { ChatCompletionRequestMessage } from "openai";
-import { z } from "zod";
-import { privateProcedure, router, t } from "@/lib/trpc";
-import { getConfigOrThrow } from "@/backend/util/config";
+import { Application } from "@prisma/client";
+import { privateProcedure, router } from "@/lib/trpc";
 import { TRPCError } from "@trpc/server";
 
+import { getConfigOrThrow } from "@/backend/util/config";
 import { createOpenAI } from "./util";
 
 const openAIProcedure = privateProcedure.use(async ({ next, ctx }) => {
@@ -33,76 +31,9 @@ export const openAIRouter = router({
         'gpt-3.5-turbo', 'gpt-3.5-turbo-0301'
       ];
     }),
-  getCompletion: openAIProcedure
-    .input(z.object({
-      chatroomId: z.string(),
-      content: z.string(),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const { chatroomId, content } = input;
-      const chatroom = await ctx.prisma.chatroom.findUniqueOrThrow({
-        where: {
-          id: chatroomId
-        },
-        include: {
-          Messages: {
-            orderBy: [{ createdAt: 'asc' }],
-            take: 50
-          }
-        }
-      })
-      let contextMessages: ChatCompletionRequestMessage[] = [];
-
-
-      if (!chatroom.RoomFeatures.includes(RoomFeature.OnlyLastMessage)) {
-        contextMessages = chatroom.Messages.map((message) => ({
-          content: message.content,
-          role: message.senderType === SenderType.User ? 'user' : 'assistant',
-          name: message.senderType === SenderType.User ? ctx.user.name : 'assistant'
-        }));
-      }
-      console.log(contextMessages)
-      try {
-        const directive: [ChatCompletionRequestMessage] | [] = chatroom.directive ? [{
-          content: chatroom.directive,
-          role: 'system',
-          name: 'System'
-        }] : []
-        const completion = await ctx.openAI.createChatCompletion({
-          messages: [...directive, ...contextMessages, {
-            content,
-            role: 'user',
-            name: ctx.user.name
-          }],
-          model: chatroom.model,
-          temperature: 0.2,
-          max_tokens: chatroom.maxToken,
-        })
-
-        if (completion.data.choices.length === 0) {
-          throw new Error("No response found");
-        }
-
-        const response = completion.data.choices[0].message
-        return ctx.prisma.message.create({
-          data: {
-            content: response!.content,
-            senderType: SenderType.Assistant,
-            Chatroom: {
-              connect: {
-                id: chatroomId
-              }
-            },
-          }
-        });
-
-      } catch (e) {
-        console.error(e)
-        throw new Error((e as Error).message)
-      }
-    }),
   userOpenAi: openAIProcedure
-    .mutation(async ({ ctx, input }) => {
-      return ctx.openAI;
+    .mutation(async ({ ctx }) => {
+      const config = await getConfigOrThrow(ctx.user, Application.OpenAI);
+      return config;
     })
 })

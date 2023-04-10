@@ -110,7 +110,6 @@ export const NewChatroomModal = ({
     const voiceProps = isVocieActive.value
       ? { voiceClarity: clarity.value, voiceStability: stability.value }
       : {};
-    console.log(data);
     // return;
     createRoom({
       ...data,

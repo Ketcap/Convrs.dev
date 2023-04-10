@@ -33,7 +33,7 @@ export const removeChatInput = (id: string) => {
 
 // !TODO: make sure if content is edited, markdown needs to be updated
 export const editChatInput = (id: string, input: Partial<ChatInput>) => {
-  chatState.value = chatState.value.map((chat) => {
+  chatState.value = chatState.peek().map((chat) => {
     if (chat.id === id) {
       return {
         ...chat,

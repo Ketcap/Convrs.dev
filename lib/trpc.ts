@@ -16,9 +16,9 @@ export const publicProcedure = t.procedure
 
 const isAuth = t.middleware(async ({ next, ctx }) => {
   const token = ctx.req.headers.authorization;
-  const refreshToken = ctx.req.headers.refreshToken;
+  // const refreshToken = ctx.req.headers.refreshToken;
   try {
-    const { data } = await ctx.supabase.auth.getUser(token);
+    const { data, error } = await ctx.supabase.auth.getUser(token);
     if (!data?.user) {
       throw new TRPCError({ code: 'FORBIDDEN', message: 'Not Authenticated' })
     }
@@ -39,6 +39,7 @@ const isAuth = t.middleware(async ({ next, ctx }) => {
     });
   }
   catch (e) {
+    console.log(e)
     throw new TRPCError({ code: 'FORBIDDEN', message: 'Not Authenticated' })
   }
 });

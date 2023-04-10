@@ -1,43 +1,43 @@
-import {
-  ActionIcon,
-  Alert,
-  Box,
-  Group,
-  LoadingOverlay,
-  Paper,
-  ScrollArea,
-  Textarea,
-} from "@mantine/core";
-import { RecordButton } from "@/components/RecordButton";
-import { Chat } from "@/components/Chat";
-import { IconExclamationMark, IconSend } from "@tabler/icons-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { Box, Group, LoadingOverlay, Paper, Textarea } from "@mantine/core";
+import { IconSend } from "@tabler/icons-react";
 import { createId } from "@paralleldrive/cuid2";
-import { startRecording, stopRecording } from "@/states/audioState";
-import { currentChatroom } from "@/states/chatrooms";
+import { useRouter } from "next/router";
+import { useSpotlight } from "@mantine/spotlight";
+import { notifications } from "@mantine/notifications";
+import { Application, SenderType } from "@prisma/client";
 
-import { trpc } from "@/lib/trpcClient";
-import { onErrorHandler } from "@/lib/trpcUtils";
+import { Chat } from "@/components/Chat";
+import { RecordButton } from "@/components/RecordButton";
+import { Layout } from "@/components/Layout";
+
+import { currentChatroom } from "@/states/chatrooms";
+import { startRecording, stopRecording } from "@/states/audioState";
 import {
   addChatInput,
   addVoiceToChatInput,
   initializeChat,
   removeChatInput,
   editChatInput,
+  addMarkdownToChatInput,
+  chatState,
 } from "@/states/chatState";
 import { getVoiceOutput } from "@/states/elevenLabs";
-import { notifications } from "@mantine/notifications";
-import { SenderType } from "@prisma/client";
-import { user } from "@/states/authentication";
-import { Layout } from "@/components/Layout";
-import { useRouter } from "next/router";
-import { useSpotlight } from "@mantine/spotlight";
+import { token, user } from "@/states/authentication";
+
+import { trpc } from "@/lib/trpcClient";
+import { onErrorHandler } from "@/lib/trpcUtils";
+
+import { completionInput } from "@/backend/util/completionUtil";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
   const router = useRouter();
   const spotlight = useSpotlight();
   const currentChatroomId = router.query.id as string;
+
+  const { mutateAsync: sendMessage } =
+    trpc.message.sendMessageToChatroom.useMutation();
 
   trpc.chatroom.getChatroom.useQuery(
     {
@@ -66,28 +66,95 @@ export default function Home() {
         },
       }
     );
-  const { isLoading: isThinking, mutateAsync: getAnswer } =
-    trpc.openAI.getCompletion.useMutation({
-      onError: onErrorHandler,
-      onSuccess: async (data) => {
-        addChatInput(data);
-        if (currentChatroom.value?.voice) {
-          getVoiceOutput({
-            output: data.content,
-            messageId: data.id,
-            voiceKey: currentChatroom.value.voice,
-            mutateAsync: voiceToMessageMutation,
-          }).then((res) => {
-            if (res) {
-              addVoiceToChatInput(data.id, res);
-            }
-          });
-        }
-      },
-    });
 
-  const { mutateAsync: sendMessage } =
-    trpc.message.sendMessageToChatroom.useMutation();
+  const isThinking = false;
+  const getAnswer = useCallback(
+    async ({ chatroomId }: { chatroomId: string; content: string }) => {
+      const openAIKey = user
+        .peek()
+        ?.Configs.find((val) => val.application === Application.OpenAI);
+      if (!openAIKey) return;
+
+      const sanitizedMessages = chatState.peek().map((val) => ({
+        senderType: val.senderType,
+        content: val.content,
+      }));
+
+      const { model, maxToken, directive, RoomFeatures, voice } =
+        currentChatroom.peek() ?? {};
+
+      const body = completionInput.parse({
+        messages: sanitizedMessages,
+        model,
+        maxToken,
+        directive,
+        RoomFeatures,
+      });
+
+      const response = await fetch("/api/openAI/completion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `${token.peek()}`,
+          OpenAI: openAIKey.key,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = response.body;
+      if (!data) {
+        return;
+      }
+      const reader = data.getReader();
+      const decoder = new TextDecoder();
+      let done = false;
+      const id = createId();
+      addChatInput({
+        chatroomId,
+        content: "",
+        createdAt: new Date(),
+        id,
+        isFavorite: false,
+        senderType: SenderType.Assistant,
+        userId: null,
+        Voice: null,
+      });
+      let message = "";
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        const chunkValue = decoder.decode(value);
+        message += chunkValue;
+        addMarkdownToChatInput(id, message);
+      }
+      const chatroomMessage = await sendMessage({
+        chatroomId,
+        content: message,
+        role: SenderType.Assistant,
+      });
+      // update id from the optimistic update
+      editChatInput(id, {
+        id: chatroomMessage.id,
+      });
+      if (voice && message) {
+        getVoiceOutput({
+          messageId: chatroomMessage.id,
+          mutateAsync: voiceToMessageMutation,
+          output: message,
+          voiceKey: voice,
+        }).then((voiceOutput) => {
+          if (voiceOutput) {
+            addVoiceToChatInput(chatroomMessage.id, voiceOutput);
+          }
+        });
+      }
+    },
+    []
+  );
 
   const isApplicationAvailable = !(
     isChatroomLoading ||
