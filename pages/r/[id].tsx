@@ -5,7 +5,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { useRouter } from "next/router";
 import { useSpotlight } from "@mantine/spotlight";
 import { notifications } from "@mantine/notifications";
-import { Application, SenderType } from "@prisma/client";
+import { SenderType } from "@prisma/client";
 
 import { Chat } from "@/components/Chat";
 import { RecordButton } from "@/components/RecordButton";
@@ -19,16 +19,13 @@ import {
   initializeChat,
   removeChatInput,
   editChatInput,
-  addMarkdownToChatInput,
-  chatState,
 } from "@/states/chatState";
 import { getVoiceOutput } from "@/states/elevenLabs";
-import { token, user } from "@/states/authentication";
+import { user } from "@/states/authentication";
 
 import { trpc } from "@/lib/trpcClient";
+import { getOpenAIAnswer } from "@/lib/chat";
 import { onErrorHandler } from "@/lib/trpcUtils";
-
-import { completionInput } from "@/backend/util/completionUtil";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
@@ -69,68 +66,9 @@ export default function Home() {
 
   const isThinking = false;
   const getAnswer = useCallback(
-    async ({ chatroomId }: { chatroomId: string; content: string }) => {
-      const openAIKey = user
-        .peek()
-        ?.Configs.find((val) => val.application === Application.OpenAI);
-      if (!openAIKey) return;
-
-      const sanitizedMessages = chatState.peek().map((val) => ({
-        senderType: val.senderType,
-        content: val.content,
-      }));
-
-      const { model, maxToken, directive, RoomFeatures, voice } =
-        currentChatroom.peek() ?? {};
-
-      const body = completionInput.parse({
-        messages: sanitizedMessages,
-        model,
-        maxToken,
-        directive,
-        RoomFeatures,
-      });
-
-      const response = await fetch("/api/openAI/completion", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          authorization: `${token.peek()}`,
-          OpenAI: openAIKey.key,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        return;
-      }
-
-      const data = response.body;
-      if (!data) {
-        return;
-      }
-      const reader = data.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
-      const id = createId();
-      addChatInput({
-        chatroomId,
-        content: "",
-        createdAt: new Date(),
-        id,
-        isFavorite: false,
-        senderType: SenderType.Assistant,
-        userId: null,
-        Voice: null,
-      });
-      let message = "";
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-        const chunkValue = decoder.decode(value);
-        message += chunkValue;
-        addMarkdownToChatInput(id, message);
-      }
+    async ({ chatroomId }: { chatroomId: string }) => {
+      const { message, id } = (await getOpenAIAnswer(chatroomId)) ?? {};
+      if (!message || !id) return;
       const chatroomMessage = await sendMessage({
         chatroomId,
         content: message,
@@ -140,6 +78,7 @@ export default function Home() {
       editChatInput(id, {
         id: chatroomMessage.id,
       });
+      const { voice } = currentChatroom.peek() ?? {};
       if (voice && message) {
         getVoiceOutput({
           messageId: chatroomMessage.id,
@@ -153,7 +92,7 @@ export default function Home() {
         });
       }
     },
-    []
+    [sendMessage, voiceToMessageMutation]
   );
 
   const isApplicationAvailable = !(

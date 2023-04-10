@@ -7,13 +7,7 @@ import { supabase } from './supabase';
 export function createContext({
   req,
   res,
-}: Partial<Omit<trpcNext.CreateNextContextOptions, 'req'>> & {
-  req: {
-    headers: {
-      authorization?: string
-    }
-  }
-}) {
+}: trpcNext.CreateNextContextOptions) {
   return { prisma: prisma, req, res, supabase };
 }
 
