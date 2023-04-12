@@ -11,11 +11,14 @@ export const Spotlight = () => {
         id: "toggle-color",
         title: "Toggle Color Scheme",
         description: "Change theme from light to dark and vice versa",
-        onTrigger: (action) => {
+        onTrigger: () => {
           toggleColorScheme();
         },
       },
     ]);
+    return () => {
+      spotlight.removeActions(["toggle-color"]);
+    };
   }, []);
 
   return null;

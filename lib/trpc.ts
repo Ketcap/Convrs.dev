@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
-import { Context, createContext } from './context';
+import { Context } from './context';
 import { extendSuperjson } from './extendSuperjson';
 
 extendSuperjson(superjson)
@@ -39,6 +39,7 @@ const isAuth = t.middleware(async ({ next, ctx }) => {
     });
   }
   catch (e) {
+    console.log(e)
     throw new TRPCError({ code: 'FORBIDDEN', message: 'Not Authenticated' })
   }
 });

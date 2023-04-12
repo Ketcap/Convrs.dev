@@ -81,6 +81,7 @@ const getChatroomMessagesInput = z.object({
 const sendMessageToChatroomInput = z.object({
   chatroomId: z.string(),
   content: z.string(),
+  role: z.nativeEnum(SenderType).default(SenderType.User)
 })
 
 const starMessageInput = z.object({
@@ -113,15 +114,15 @@ export const messageRouter = router({
   sendMessageToChatroom: privateProcedure
     .input(sendMessageToChatroomInput)
     .mutation(async ({ ctx, input }) => {
-      const { chatroomId, content } = input;
+      const { chatroomId, content, role } = input;
       const userId = ctx.user.id;
 
 
       return ctx.prisma.message.create({
         data: {
           content,
-          senderType: SenderType.User,
-          User: { connect: { id: userId } },
+          senderType: role,
+          ...(role === SenderType.User ? { User: { connect: { id: userId } } } : {}),
           Chatroom: {
             connect: { id: chatroomId }
           }

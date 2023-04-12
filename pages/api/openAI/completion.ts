@@ -1,63 +1,91 @@
-export const toBeContinued = {};
-// continue on this;
-// import { NextApiRequest, NextApiResponse, NextConfig } from "next";
+import { NextRequest, } from "next/server";
+import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser";
 
-// import { openAIRouter } from "../../../api/openAI/router";
-// import { createContext } from "../../../lib/context";
+import { completionInput, prepareOpenAIInput } from "@/backend/util/completionUtil";
 
-// import stream, { Readable } from 'stream'
-// import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser";
-// import { IncomingMessage } from "http";
-// import { read } from "fs";
+export const config = {
+  runtime: "edge",
+};
 
-// export const config = {
-//   api: {
-//     bodyParser: false,
-//   }
-// }
+export default async function handler(req: NextRequest) {
+  const openAiKey = req.headers.get('OpenAI');
 
-// async function buffer(readable: Readable) {
-//   const chunks = [];
-//   for await (const chunk of readable) {
-//     chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-//   }
-//   return Buffer.concat(chunks);
-// }
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({
+      message: 'Method Not Allowed'
+    }),
+      {
+        status: 405,
+        headers: {
+          'content-type': 'application/json',
+        },
+      });
+  }
 
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
 
-// export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-//   if (req.method !== 'POST') {
-//     return res.status(405).json({ message: 'Method Not Allowed' })
-//   }
-//   const buf = await buffer(req);
-//   const rawBody = JSON.parse(buf.toString('utf8'));
-//   const openAI = openAIRouter.createCaller(createContext({ req, res }))
-//   const responseStream = await openAI.getCompletion(rawBody);
+  const json = completionInput.parse(await req.json());
+  const { messages, directive, model, maxToken, RoomFeatures = [] } = json;
 
-//   const encoder = new TextEncoder();
-//   const decoder = new TextDecoder();
+  const input = prepareOpenAIInput(
+    {
+      directive,
+      maxToken,
+      messages,
+      model,
+      RoomFeatures
+    }
+  )
+  let counter = 0;
 
+  const textStream = await fetch("https://api.openai.com/v1/chat/completions", {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${openAiKey}`,
+    },
+    method: "POST",
+    body: JSON.stringify({
+      ...input,
+      stream: true,
+    }),
+  });
 
-//   const stream = new Readable({
-//     async read() {
-//       (responseStream.data as unknown as IncomingMessage).on('data', (chunk) => {
-//         const data = decoder.decode(chunk) as any;
-//         if (data === "data: [DONE]") {
-//           return;
-//         }
-//         try {
-//           const json = JSON.parse(data.replace('data:', ''));
-//           const text = json.choices[0].delta.content;
-//           this.push(text);
-//         } catch (e) {
-//           console.log(data);
-//         }
+  const stream = new ReadableStream({
+    async start(controller) {
+      function onParse(event: ParsedEvent | ReconnectInterval) {
+        if (event.type === "event") {
+          const data = event.data;
+          if (data === "[DONE]") {
+            controller.close();
+            return;
+          }
+          try {
+            const json = JSON.parse(data);
+            const text = json.choices[0].delta?.content ?? '';
+            if (counter < 2 && (text.match(/\n/) || []).length) {
+              return;
+            }
+            const queue = encoder.encode(text);
+            controller.enqueue(queue);
+            counter++;
+          } catch (e) {
+            controller.error(e);
+          }
+        }
+      }
 
-//       })
-//     }
-//   });
-//   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-//   stream.pipe(res)
-// }
+      // stream response (SSE) from OpenAI may be fragmented into multiple chunks
+      // this ensures we properly read chunks & invoke an event for each SSE event stream
+      const parser = createParser(onParse);
+
+      // https://web.dev/streams/#asynchronous-iteration
+      for await (const chunk of (textStream as unknown as any).body) {
+        parser.feed(decoder.decode(chunk));
+      }
+    },
+  });
+  return new Response(stream);
+}
 
 

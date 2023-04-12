@@ -1,23 +1,18 @@
-import {
-  ActionIcon,
-  Alert,
-  Box,
-  Group,
-  LoadingOverlay,
-  Paper,
-  ScrollArea,
-  Textarea,
-} from "@mantine/core";
-import { RecordButton } from "@/components/RecordButton";
-import { Chat } from "@/components/Chat";
-import { IconExclamationMark, IconSend } from "@tabler/icons-react";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { Box, Group, LoadingOverlay, Paper, Textarea } from "@mantine/core";
+import { IconSend } from "@tabler/icons-react";
 import { createId } from "@paralleldrive/cuid2";
-import { startRecording, stopRecording } from "@/states/audioState";
-import { currentChatroom } from "@/states/chatrooms";
+import { useRouter } from "next/router";
+import { useSpotlight } from "@mantine/spotlight";
+import { notifications } from "@mantine/notifications";
+import { SenderType } from "@prisma/client";
 
-import { trpc } from "@/lib/trpcClient";
-import { onErrorHandler } from "@/lib/trpcUtils";
+import { Chat } from "@/components/Chat";
+import { RecordButton } from "@/components/RecordButton";
+import { Layout } from "@/components/Layout";
+
+import { currentChatroom } from "@/states/chatrooms";
+import { startRecording, stopRecording } from "@/states/audioState";
 import {
   addChatInput,
   addVoiceToChatInput,
@@ -26,18 +21,22 @@ import {
   editChatInput,
 } from "@/states/chatState";
 import { getVoiceOutput } from "@/states/elevenLabs";
-import { notifications } from "@mantine/notifications";
-import { SenderType } from "@prisma/client";
 import { user } from "@/states/authentication";
-import { Layout } from "@/components/Layout";
-import { useRouter } from "next/router";
-import { useSpotlight } from "@mantine/spotlight";
+
+import { trpc } from "@/lib/trpcClient";
+import { getOpenAIAnswer } from "@/lib/chat";
+import { onErrorHandler } from "@/lib/trpcUtils";
+import { useSignal } from "@preact/signals-react";
 
 export default function Home() {
   const ref = useRef<HTMLTextAreaElement>();
   const router = useRouter();
   const spotlight = useSpotlight();
+  const isThinking = useSignal(false);
   const currentChatroomId = router.query.id as string;
+
+  const { mutateAsync: sendMessage } =
+    trpc.message.sendMessageToChatroom.useMutation();
 
   trpc.chatroom.getChatroom.useQuery(
     {
@@ -66,32 +65,45 @@ export default function Home() {
         },
       }
     );
-  const { isLoading: isThinking, mutateAsync: getAnswer } =
-    trpc.openAI.getCompletion.useMutation({
-      onError: onErrorHandler,
-      onSuccess: async (data) => {
-        addChatInput(data);
-        if (currentChatroom.value?.voice) {
+
+  const getAnswer = useCallback(
+    async ({ chatroomId }: { chatroomId: string }) => {
+      isThinking.value = true;
+      try {
+        const { message, id } = (await getOpenAIAnswer(chatroomId)) ?? {};
+        if (!message || !id) return;
+        const chatroomMessage = await sendMessage({
+          chatroomId,
+          content: message,
+          role: SenderType.Assistant,
+        });
+        // update id from the optimistic update
+        editChatInput(id, {
+          id: chatroomMessage.id,
+        });
+        const { voice } = currentChatroom.peek() ?? {};
+        if (voice && message) {
           getVoiceOutput({
-            output: data.content,
-            messageId: data.id,
-            voiceKey: currentChatroom.value.voice,
+            messageId: chatroomMessage.id,
             mutateAsync: voiceToMessageMutation,
-          }).then((res) => {
-            if (res) {
-              addVoiceToChatInput(data.id, res);
+            output: message,
+            voiceKey: voice,
+          }).then((voiceOutput) => {
+            if (voiceOutput) {
+              addVoiceToChatInput(chatroomMessage.id, voiceOutput);
             }
           });
         }
-      },
-    });
-
-  const { mutateAsync: sendMessage } =
-    trpc.message.sendMessageToChatroom.useMutation();
+      } finally {
+        isThinking.value = false;
+      }
+    },
+    [sendMessage, voiceToMessageMutation]
+  );
 
   const isApplicationAvailable = !(
     isChatroomLoading ||
-    isThinking ||
+    isThinking.value ||
     !currentChatroomId
   );
 
@@ -138,6 +150,9 @@ export default function Home() {
       userId: `${user.peek()?.id}`,
       Voice: null,
     });
+    getAnswer({
+      chatroomId: currentChatroomId,
+    });
     sendMessage(
       {
         content: val,
@@ -147,10 +162,6 @@ export default function Home() {
         onSuccess: async (data) => {
           // correct the update with the correct id and other information
           editChatInput(randomId, data);
-          getAnswer({
-            chatroomId: data.chatroomId,
-            content: data.content,
-          });
         },
         onError: (err) => {
           onErrorHandler(err);
@@ -186,6 +197,9 @@ export default function Home() {
       userId: `${user.peek()?.id}`,
       Voice: null,
     });
+    getAnswer({
+      chatroomId: currentChatroomId,
+    });
     sendMessage(
       {
         content,
@@ -195,10 +209,6 @@ export default function Home() {
         onSuccess: async (data) => {
           // correct the update with the correct id and other information
           editChatInput(randomId, data);
-          getAnswer({
-            chatroomId: data.chatroomId,
-            content: data.content,
-          });
         },
         onError: (err) => {
           onErrorHandler(err);
@@ -239,7 +249,7 @@ export default function Home() {
       >
         <Group align={"center"} w="100%">
           <LoadingOverlay
-            visible={isThinking || isChatroomLoading}
+            visible={isThinking.value || isChatroomLoading}
             zIndex={5}
           />
           <Textarea

@@ -59,10 +59,10 @@ function App({ Component, pageProps }: AppProps<{ colorScheme: ColorScheme }>) {
             searchPlaceholder="Search..."
             nothingFoundMessage="Nothing found..."
           >
-            <Spotlight />
             <Notifications position="top-right" />
             <Component {...pageProps} />
             <Authentication />
+            <Spotlight />
           </SpotlightProvider>
         </MantineProvider>
         <Analytics />
