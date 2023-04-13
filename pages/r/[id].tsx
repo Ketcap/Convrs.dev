@@ -72,6 +72,7 @@ export default function Home() {
       try {
         const { message, id } = (await getOpenAIAnswer(chatroomId)) ?? {};
         if (!message || !id) return;
+
         const chatroomMessage = await sendMessage({
           chatroomId,
           content: message,
@@ -135,12 +136,12 @@ export default function Home() {
     };
   }, [currentChatroomId]);
 
-  const onSend = () => {
+  const onSend = async () => {
     const val = ref.current!.value;
     if (!val || !currentChatroomId) return;
     const randomId = createId();
     // optimistic update
-    addChatInput({
+    await addChatInput({
       id: randomId,
       content: val,
       chatroomId: currentChatroomId,
@@ -172,7 +173,7 @@ export default function Home() {
     ref.current!.value = "";
   };
 
-  const onVoiceSend = (input: string) => {
+  const onVoiceSend = async (input: string) => {
     if (!currentChatroomId) return;
     if (!input) {
       notifications.show({
@@ -187,7 +188,7 @@ export default function Home() {
     const content = `${input}  ${val}`;
     const randomId = createId();
     // optimistic update
-    addChatInput({
+    await addChatInput({
       id: randomId,
       content,
       chatroomId: currentChatroomId,
