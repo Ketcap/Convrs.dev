@@ -103,4 +103,5 @@ model Config {
 
 enum RoomFeature {
   OnlyLastMessage
+  OnlyUserMessages
 }

@@ -3,7 +3,8 @@ import { ChatCompletionRequestMessage } from "openai";
 import type { Chatroom, Message, RoomFeature, SenderType } from "@prisma/client";
 
 const roomFeatures: Record<RoomFeature, RoomFeature> = {
-  'OnlyLastMessage': "OnlyLastMessage"
+  'OnlyLastMessage': "OnlyLastMessage",
+  "OnlyUserMessages": "OnlyUserMessages",
 }
 
 const senderTypes: Record<SenderType, SenderType> = {
@@ -26,12 +27,7 @@ export const prepareOpenAIInput = (
   let contextMessages: ChatCompletionRequestMessage[] = [];
 
 
-  if (!RoomFeatures.includes(roomFeatures.OnlyLastMessage)) {
-    contextMessages = messages.map((message) => ({
-      content: message.content,
-      role: message.senderType === senderTypes.User ? 'user' : 'assistant',
-    }));
-  } else {
+  if (RoomFeatures.includes(roomFeatures.OnlyLastMessage)) {
     const lastMessage = messages[messages.length - 1];
     contextMessages = [
       {
@@ -39,6 +35,16 @@ export const prepareOpenAIInput = (
         role: lastMessage.senderType === senderTypes.User ? 'user' : 'assistant',
       }
     ]
+  } else if (RoomFeatures.includes(roomFeatures.OnlyUserMessages)) {
+    contextMessages = messages.filter((message) => message.senderType === senderTypes.User).map((message) => ({
+      content: message.content,
+      role: 'user',
+    }))
+  } else {
+    contextMessages = messages.map((message) => ({
+      content: message.content,
+      role: message.senderType === senderTypes.User ? 'user' : 'assistant',
+    }));
   }
 
   return {

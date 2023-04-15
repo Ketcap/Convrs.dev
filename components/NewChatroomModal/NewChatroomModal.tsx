@@ -146,6 +146,10 @@ export const NewChatroomModal = ({
               value: RoomFeature.OnlyLastMessage,
               label: "Only Use Last Message",
             },
+            {
+              value: RoomFeature.OnlyUserMessages,
+              label: "Use Only My Messages",
+            },
           ]}
           value={form.values.roomFeatures}
           onChange={(item) => {
